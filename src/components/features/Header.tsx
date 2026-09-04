@@ -43,6 +43,9 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Button size="sm" variant="secondary" to="/login" className="hidden md:inline-flex">
+            Browse rentals
+          </Button>
           <Button size="sm" className="hidden md:inline-flex" onClick={openContactModal}>
             Start a Project
           </Button>

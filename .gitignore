@@ -28,3 +28,4 @@ dist-ssr
 firebase-debug.log*
 .env
 .env.local
+*.local.md

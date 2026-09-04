@@ -1,0 +1,105 @@
+{
+  "DEMO_LANDLORD_ID": "demo-landlord",
+  "DEMO_PROPERTIES": [
+    {
+      "propertyId": "prop-bgc-1br",
+      "landlordId": "demo-landlord",
+      "title": "Sunlit 1BR in Austin",
+      "description": "Corner unit two blocks from Rainey Street. In-unit laundry, fast fiber, and a shared gym in the building.",
+      "address": "88 Rainey Street, East Austin, Austin, TX",
+      "price": 1850,
+      "photos": [
+        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "status": "available",
+      "screeningQuestions": [
+        { "id": "occupants", "prompt": "How many people will live in this home?", "type": "text" },
+        { "id": "pets", "prompt": "Do you have pets?", "type": "yesno" },
+        { "id": "move-in", "prompt": "When do you want to move in?", "type": "text" },
+        { "id": "income", "prompt": "What is your monthly household income?", "type": "text" }
+      ]
+    },
+    {
+      "propertyId": "prop-makati-studio",
+      "landlordId": "demo-landlord",
+      "title": "Quiet studio in Williamsburg",
+      "description": "Compact studio with a full kitchenette. Walkable to the Bedford Avenue L train and the Saturday farmers market.",
+      "address": "214 Bedford Avenue, Williamsburg, Brooklyn, NY",
+      "price": 2400,
+      "photos": [
+        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "status": "available",
+      "screeningQuestions": [
+        { "id": "occupants", "prompt": "How many people will live in this home?", "type": "text" },
+        { "id": "pets", "prompt": "Do you have pets?", "type": "yesno" },
+        { "id": "move-in", "prompt": "When do you want to move in?", "type": "text" },
+        { "id": "income", "prompt": "What is your monthly household income?", "type": "text" }
+      ]
+    },
+    {
+      "propertyId": "prop-qc-2br",
+      "landlordId": "demo-landlord",
+      "title": "Family 2BR in Lincoln Park",
+      "description": "Two bedrooms, one parking space, and a balcony over a quiet side street. A short walk to the lakefront path.",
+      "address": "2140 N Clark Street, Lincoln Park, Chicago, IL",
+      "price": 2100,
+      "photos": [
+        "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "status": "available",
+      "screeningQuestions": [
+        { "id": "occupants", "prompt": "How many people will live in this home?", "type": "text" },
+        { "id": "pets", "prompt": "Do you have pets?", "type": "yesno" },
+        { "id": "move-in", "prompt": "When do you want to move in?", "type": "text" },
+        { "id": "income", "prompt": "What is your monthly household income?", "type": "text" }
+      ]
+    },
+    {
+      "propertyId": "prop-alabang-house",
+      "landlordId": "demo-landlord",
+      "title": "Townhouse in RiNo",
+      "description": "Three-story townhouse with a small backyard. Gated row, 10 minutes to Union Station.",
+      "address": "3001 Larimer Street, RiNo, Denver, CO",
+      "price": 3200,
+      "photos": [
+        "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1200&q=80"
+      ],
+      "status": "available",
+      "screeningQuestions": [
+        { "id": "occupants", "prompt": "How many people will live in this home?", "type": "text" },
+        { "id": "pets", "prompt": "Do you have pets?", "type": "yesno" },
+        { "id": "move-in", "prompt": "When do you want to move in?", "type": "text" },
+        { "id": "income", "prompt": "What is your monthly household income?", "type": "text" }
+      ]
+    }
+  ],
+  "DEMO_APPLICATIONS": [
+    {
+      "applicationId": "app-bgc-pending",
+      "propertyId": "prop-bgc-1br",
+      "tenantId": "demo-tenant",
+      "status": "pending",
+      "timestamp": "2026-09-02T08:30:00.000Z",
+      "answers": [
+        { "questionId": "occupants", "prompt": "How many people will live in this home?", "answer": "2" },
+        { "questionId": "pets", "prompt": "Do you have pets?", "answer": "no" },
+        { "questionId": "move-in", "prompt": "When do you want to move in?", "answer": "October 2026" },
+        { "questionId": "income", "prompt": "What is your monthly household income?", "answer": "8500" }
+      ]
+    },
+    {
+      "applicationId": "app-qc-review",
+      "propertyId": "prop-qc-2br",
+      "tenantId": "demo-tenant-2",
+      "status": "reviewing",
+      "timestamp": "2026-09-03T14:10:00.000Z",
+      "answers": [
+        { "questionId": "occupants", "prompt": "How many people will live in this home?", "answer": "4" },
+        { "questionId": "pets", "prompt": "Do you have pets?", "answer": "yes" },
+        { "questionId": "move-in", "prompt": "When do you want to move in?", "answer": "As soon as possible" },
+        { "questionId": "income", "prompt": "What is your monthly household income?", "answer": "7200" }
+      ]
+    }
+  ]
+}

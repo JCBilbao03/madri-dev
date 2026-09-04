@@ -51,13 +51,16 @@ export function Hero() {
             we hand it over.
           </p>
 
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Button size="lg" onClick={openContactModal}>
               Book a Discovery Call
               <ArrowRight className="size-4" aria-hidden="true" />
             </Button>
             <Button size="lg" variant="secondary" href="#services">
               View Our Work
+            </Button>
+            <Button size="lg" variant="secondary" to="/login">
+              Browse rentals
             </Button>
           </div>
         </motion.div>

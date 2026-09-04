@@ -1,5 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getAnalytics, isSupported } from 'firebase/analytics';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBtRfHkOCHNOXpO-3OXvuyAjy5OxnYy9Kc',
@@ -12,6 +15,15 @@ const firebaseConfig = {
 };
 
 export const firebaseApp = initializeApp(firebaseConfig);
+
+/** Firebase Authentication — email/password for the rental marketplace. */
+export const auth = getAuth(firebaseApp);
+
+/** Cloud Firestore — users, properties, and applications. */
+export const db = getFirestore(firebaseApp);
+
+/** Cloud Storage — property photos in a later phase. */
+export const storage = getStorage(firebaseApp);
 
 void isSupported().then((supported) => {
   if (supported) {

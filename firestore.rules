@@ -1,0 +1,272 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: Firebase Auth uid
+    // Fields:
+    //   - uid: string (required, immutable, must equal Auth uid)
+    //   - role: string (required, "tenant"|"landlord", immutable after create)
+    //   - name: string (required, 1-80 chars)
+    //   - email: string (required, valid email, immutable, must match Auth email)
+    //   - profileData: map (required, max 20 keys)
+    //       savedPropertyIds: optional list of property id strings (max 40)
+    //
+    // Collection: properties
+    // Document ID: propertyId
+    // Fields:
+    //   - propertyId, landlordId, title, description, address, price, photos, status
+    //   - screeningQuestions: list of 1-8 maps { id, prompt, type: text|yesno }
+    // Listing body is immutable. Landlords may update screeningQuestions only.
+    //
+    // Collection: applications
+    // Document ID: {tenantUid}_{propertyId}
+    // Fields:
+    //   - applicationId, propertyId, tenantId, status, timestamp
+    //   - answers: list of maps { questionId, prompt, answer } required on create
+    //     and aligned with that property's screeningQuestions
+    //
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function callerProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isLandlord() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && callerProfile().role == 'landlord';
+    }
+
+    function isTenant() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && callerProfile().role == 'tenant';
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
+    }
+
+    function isValidSavedIds(value) {
+      return value is list
+        && value.size() <= 40;
+    }
+
+    function isValidProfileData(data) {
+      return data.profileData is map
+        && data.profileData.size() <= 20
+        && (
+          !('savedPropertyIds' in data.profileData)
+          || isValidSavedIds(data.profileData.savedPropertyIds)
+        );
+    }
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'role', 'name', 'email', 'profileData']) &&
+        data.uid is string &&
+        data.uid == request.auth.uid &&
+        data.role in ['tenant', 'landlord'] &&
+        data.name is string &&
+        data.name.size() >= 1 &&
+        data.name.size() <= 80 &&
+        isValidEmail(data.email) &&
+        data.email == request.auth.token.email &&
+        isValidProfileData(data);
+    }
+
+    function isValidQuestion(item) {
+      return item is map
+        && item.keys().hasOnly(['id', 'prompt', 'type'])
+        && item.id is string
+        && item.id.size() >= 1
+        && item.id.size() <= 40
+        && item.prompt is string
+        && item.prompt.size() >= 8
+        && item.prompt.size() <= 160
+        && item.type in ['text', 'yesno'];
+    }
+
+    function isValidQuestions(list) {
+      return list is list
+        && list.size() >= 1
+        && list.size() <= 8
+        && (list.size() < 1 || isValidQuestion(list[0]))
+        && (list.size() < 2 || isValidQuestion(list[1]))
+        && (list.size() < 3 || isValidQuestion(list[2]))
+        && (list.size() < 4 || isValidQuestion(list[3]))
+        && (list.size() < 5 || isValidQuestion(list[4]))
+        && (list.size() < 6 || isValidQuestion(list[5]))
+        && (list.size() < 7 || isValidQuestion(list[6]))
+        && (list.size() < 8 || isValidQuestion(list[7]));
+    }
+
+    function isValidAnswerShape(item) {
+      return item is map
+        && item.keys().hasOnly(['questionId', 'prompt', 'answer'])
+        && item.questionId is string
+        && item.questionId.size() >= 1
+        && item.questionId.size() <= 40
+        && item.prompt is string
+        && item.prompt.size() >= 8
+        && item.prompt.size() <= 160
+        && item.answer is string
+        && item.answer.size() >= 1
+        && item.answer.size() <= 400;
+    }
+
+    function isValidAnswersShape(list) {
+      return list is list
+        && list.size() <= 8
+        && (list.size() < 1 || isValidAnswerShape(list[0]))
+        && (list.size() < 2 || isValidAnswerShape(list[1]))
+        && (list.size() < 3 || isValidAnswerShape(list[2]))
+        && (list.size() < 4 || isValidAnswerShape(list[3]))
+        && (list.size() < 5 || isValidAnswerShape(list[4]))
+        && (list.size() < 6 || isValidAnswerShape(list[5]))
+        && (list.size() < 7 || isValidAnswerShape(list[6]))
+        && (list.size() < 8 || isValidAnswerShape(list[7]));
+    }
+
+    function listingData(propertyId) {
+      return get(/databases/$(database)/documents/properties/$(propertyId)).data;
+    }
+
+    function answersMatchQuestions(data) {
+      return exists(/databases/$(database)/documents/properties/$(data.propertyId))
+        && listingData(data.propertyId).screeningQuestions is list
+        && data.answers.size() == listingData(data.propertyId).screeningQuestions.size()
+        && data.answers.size() >= 1
+        && data.answers.size() <= 8
+        && (data.answers.size() < 1 || (
+          data.answers[0].questionId == listingData(data.propertyId).screeningQuestions[0].id
+          && (listingData(data.propertyId).screeningQuestions[0].type != 'yesno'
+            || data.answers[0].answer in ['yes', 'no'])
+        ))
+        && (data.answers.size() < 2 || (
+          data.answers[1].questionId == listingData(data.propertyId).screeningQuestions[1].id
+          && (listingData(data.propertyId).screeningQuestions[1].type != 'yesno'
+            || data.answers[1].answer in ['yes', 'no'])
+        ))
+        && (data.answers.size() < 3 || (
+          data.answers[2].questionId == listingData(data.propertyId).screeningQuestions[2].id
+          && (listingData(data.propertyId).screeningQuestions[2].type != 'yesno'
+            || data.answers[2].answer in ['yes', 'no'])
+        ))
+        && (data.answers.size() < 4 || (
+          data.answers[3].questionId == listingData(data.propertyId).screeningQuestions[3].id
+          && (listingData(data.propertyId).screeningQuestions[3].type != 'yesno'
+            || data.answers[3].answer in ['yes', 'no'])
+        ))
+        && (data.answers.size() < 5 || (
+          data.answers[4].questionId == listingData(data.propertyId).screeningQuestions[4].id
+          && (listingData(data.propertyId).screeningQuestions[4].type != 'yesno'
+            || data.answers[4].answer in ['yes', 'no'])
+        ))
+        && (data.answers.size() < 6 || (
+          data.answers[5].questionId == listingData(data.propertyId).screeningQuestions[5].id
+          && (listingData(data.propertyId).screeningQuestions[5].type != 'yesno'
+            || data.answers[5].answer in ['yes', 'no'])
+        ))
+        && (data.answers.size() < 7 || (
+          data.answers[6].questionId == listingData(data.propertyId).screeningQuestions[6].id
+          && (listingData(data.propertyId).screeningQuestions[6].type != 'yesno'
+            || data.answers[6].answer in ['yes', 'no'])
+        ))
+        && (data.answers.size() < 8 || (
+          data.answers[7].questionId == listingData(data.propertyId).screeningQuestions[7].id
+          && (listingData(data.propertyId).screeningQuestions[7].type != 'yesno'
+            || data.answers[7].answer in ['yes', 'no'])
+        ));
+    }
+
+    function isValidApplication(data) {
+      return hasOnlyAllowedFields(['applicationId', 'propertyId', 'tenantId', 'status', 'timestamp', 'answers']) &&
+        data.applicationId is string &&
+        data.applicationId.size() >= 3 &&
+        data.applicationId.size() <= 120 &&
+        data.propertyId is string &&
+        data.propertyId.size() >= 1 &&
+        data.propertyId.size() <= 80 &&
+        data.tenantId is string &&
+        data.status in ['pending', 'reviewing', 'accepted', 'declined', 'withdrawn'] &&
+        data.timestamp is string &&
+        data.timestamp.size() >= 20 &&
+        data.timestamp.size() <= 40 &&
+        (!('answers' in data) || isValidAnswersShape(data.answers));
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidUser(request.resource.data)
+        && request.resource.data.uid == userId;
+
+      allow update: if isOwner(userId)
+        && isValidUser(request.resource.data)
+        && areImmutableFieldsUnchanged(['uid', 'role', 'email']);
+
+      allow delete: if false;
+    }
+
+    match /properties/{propertyId} {
+      allow read: if isAuthenticated();
+      allow create: if false;
+      allow delete: if false;
+      allow update: if isLandlord()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['screeningQuestions'])
+        && isValidQuestions(request.resource.data.screeningQuestions);
+    }
+
+    match /applications/{applicationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.tenantId == request.auth.uid || isLandlord()
+      );
+
+      allow create: if isTenant()
+        && isValidApplication(request.resource.data)
+        && request.resource.data.tenantId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.applicationId == applicationId
+        && 'answers' in request.resource.data
+        && answersMatchQuestions(request.resource.data);
+
+      allow update: if isValidApplication(request.resource.data)
+        && areImmutableFieldsUnchanged(['applicationId', 'propertyId', 'tenantId', 'timestamp', 'answers'])
+        && (
+          (resource.data.tenantId == request.auth.uid
+            && isTenant()
+            && request.resource.data.status == 'withdrawn')
+          || (isLandlord()
+            && request.resource.data.status in ['pending', 'reviewing', 'accepted', 'declined'])
+        );
+
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

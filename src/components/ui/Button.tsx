@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from 'react';
+import { Link } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
 
@@ -31,21 +32,35 @@ type ButtonVariants = VariantProps<typeof buttonVariants>;
 type ButtonAsButton = ButtonHTMLAttributes<HTMLButtonElement> &
   ButtonVariants & {
     href?: never;
+    to?: never;
   };
 
-type ButtonAsLink = AnchorHTMLAttributes<HTMLAnchorElement> &
+type ButtonAsAnchor = AnchorHTMLAttributes<HTMLAnchorElement> &
   ButtonVariants & {
-    /** When present the button renders as an anchor, keeping link semantics intact. */
+    /** External or in-page hash links. SPA routes should use `to` instead. */
     href: string;
+    to?: never;
   };
 
-type ButtonProps = ButtonAsButton | ButtonAsLink;
+type ButtonAsRouterLink = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> &
+  ButtonVariants & {
+    /** In-app React Router destination. */
+    to: string;
+    href?: never;
+  };
+
+type ButtonProps = ButtonAsButton | ButtonAsAnchor | ButtonAsRouterLink;
 
 export function Button({ className, variant, size, ...props }: ButtonProps) {
   const classes = cn(buttonVariants({ variant, size }), className);
 
-  if (typeof props.href === 'string') {
-    const { href, ...anchorProps } = props as ButtonAsLink;
+  if ('to' in props && typeof props.to === 'string') {
+    const { to, ...linkProps } = props;
+    return <Link to={to} className={classes} {...linkProps} />;
+  }
+
+  if ('href' in props && typeof props.href === 'string') {
+    const { href, ...anchorProps } = props;
     return <a href={href} className={classes} {...anchorProps} />;
   }
 

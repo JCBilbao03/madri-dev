@@ -49,7 +49,11 @@ export function MobileMenu() {
               ))}
             </ul>
 
-            <Button size="lg" className="mt-6 w-full" onClick={handleStartProject}>
+            <Button size="lg" variant="secondary" to="/login" className="mt-6 w-full" onClick={closeMobileMenu}>
+              Browse rentals
+            </Button>
+
+            <Button size="lg" className="mt-3 w-full" onClick={handleStartProject}>
               Start a Project
             </Button>
 

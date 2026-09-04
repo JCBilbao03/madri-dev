@@ -1,37 +1,104 @@
-import { Contact } from '@/components/features/Contact';
-import { ContactModal } from '@/components/features/ContactModal';
-import { Footer } from '@/components/features/Footer';
-import { Founders } from '@/components/features/Founders';
-import { Header } from '@/components/features/Header';
-import { Hero } from '@/components/features/Hero';
-import { Services } from '@/components/features/Services';
-import { Workflow } from '@/components/features/Workflow';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+
+import { AuthListener } from '@/components/rental/AuthListener';
+import { GuestOnly } from '@/components/rental/GuestOnly';
+import { RentalLayout } from '@/components/rental/RentalNavbar';
+import { RequireAuth } from '@/components/rental/RequireAuth';
 import { useThemeSync } from '@/hooks/useThemeSync';
+import { AccountPage } from '@/pages/AccountPage';
+import { LandingPage } from '@/pages/LandingPage';
+import { LandlordDashboard } from '@/pages/LandlordDashboard';
+import { ListingQuestionsPage } from '@/pages/ListingQuestionsPage';
+import { LoginPage } from '@/pages/LoginPage';
+import { MyApplicationsPage } from '@/pages/MyApplicationsPage';
+import { PropertyDetailPage } from '@/pages/PropertyDetailPage';
+import { SavedListingsPage } from '@/pages/SavedListingsPage';
+import { SignupPage } from '@/pages/SignupPage';
+import { TenantFeed } from '@/pages/TenantFeed';
 
 export function App() {
   useThemeSync();
 
   return (
-    <>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-70 focus:rounded-full focus:bg-accent focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-base"
-      >
-        Skip to content
-      </a>
-
-      <Header />
-
-      <main id="main">
-        <Hero />
-        <Services />
-        <Workflow />
-        <Founders />
-        <Contact />
-      </main>
-
-      <Footer />
-      <ContactModal />
-    </>
+    <BrowserRouter>
+      <AuthListener />
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/login"
+          element={
+            <GuestOnly>
+              <LoginPage />
+            </GuestOnly>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <GuestOnly>
+              <SignupPage />
+            </GuestOnly>
+          }
+        />
+        <Route element={<RentalLayout />}>
+          <Route
+            path="/landlord"
+            element={
+              <RequireAuth role="landlord">
+                <LandlordDashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/landlord/listings/:propertyId/questions"
+            element={
+              <RequireAuth role="landlord">
+                <ListingQuestionsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/tenant"
+            element={
+              <RequireAuth role="tenant">
+                <TenantFeed />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/tenant/saved"
+            element={
+              <RequireAuth role="tenant">
+                <SavedListingsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/tenant/applications"
+            element={
+              <RequireAuth role="tenant">
+                <MyApplicationsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/properties/:propertyId"
+            element={
+              <RequireAuth>
+                <PropertyDetailPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/account"
+            element={
+              <RequireAuth>
+                <AccountPage />
+              </RequireAuth>
+            }
+          />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
