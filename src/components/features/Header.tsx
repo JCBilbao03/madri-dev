@@ -43,6 +43,9 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Button size="sm" variant="ghost" to="/cleaning-app" className="hidden md:inline-flex">
+            Find cleaners
+          </Button>
           <Button size="sm" variant="secondary" to="/login" className="hidden md:inline-flex">
             Browse rentals
           </Button>

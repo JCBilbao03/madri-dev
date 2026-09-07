@@ -49,7 +49,11 @@ export function MobileMenu() {
               ))}
             </ul>
 
-            <Button size="lg" variant="secondary" to="/login" className="mt-6 w-full" onClick={closeMobileMenu}>
+            <Button size="lg" variant="secondary" to="/cleaning-app" className="mt-6 w-full" onClick={closeMobileMenu}>
+              Find cleaners
+            </Button>
+
+            <Button size="lg" variant="secondary" to="/login" className="mt-3 w-full" onClick={closeMobileMenu}>
               Browse rentals
             </Button>
 

@@ -1,11 +1,15 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
+import { CleaningLayout } from '@/components/cleaning/CleaningLayout';
 import { AuthListener } from '@/components/rental/AuthListener';
 import { GuestOnly } from '@/components/rental/GuestOnly';
 import { RentalLayout } from '@/components/rental/RentalNavbar';
 import { RequireAuth } from '@/components/rental/RequireAuth';
 import { useThemeSync } from '@/hooks/useThemeSync';
 import { AccountPage } from '@/pages/AccountPage';
+import { CleanerProfilePage } from '@/pages/CleanerProfilePage';
+import { CleaningDashboardPage } from '@/pages/CleaningDashboardPage';
+import { CleaningSearchPage } from '@/pages/CleaningSearchPage';
 import { LandingPage } from '@/pages/LandingPage';
 import { LandlordDashboard } from '@/pages/LandlordDashboard';
 import { ListingQuestionsPage } from '@/pages/ListingQuestionsPage';
@@ -40,6 +44,11 @@ export function App() {
             </GuestOnly>
           }
         />
+        <Route path="/cleaning-app" element={<CleaningLayout />}>
+          <Route index element={<CleaningSearchPage />} />
+          <Route path="cleaner/:id" element={<CleanerProfilePage />} />
+          <Route path="dashboard" element={<CleaningDashboardPage />} />
+        </Route>
         <Route element={<RentalLayout />}>
           <Route
             path="/landlord"
