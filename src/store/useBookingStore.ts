@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { getCleanerById } from '@/lib/cleaning';
+import { captureLead } from '@/lib/leads';
 import {
   asBooking,
   BOOKING_STEPS,
@@ -115,6 +116,20 @@ export const useBookingStore = create<BookingState>()(
           isBookingOpen: false,
           step: 'datetime',
           draft: EMPTY_DRAFT,
+        });
+
+        captureLead({
+          appId: 'cleaning',
+          source: 'cleaning-booking',
+          name: 'Cleaning guest',
+          email: 'guest@cleaning.local',
+          summary: `${booking.serviceType} with ${booking.cleanerName} on ${booking.date} at ${booking.time}`,
+          metadata: {
+            bookingId: booking.id,
+            cleanerId: booking.cleanerId,
+            serviceType: booking.serviceType,
+            address: booking.address,
+          },
         });
 
         return booking;

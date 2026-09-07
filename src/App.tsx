@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import { CleaningLayout } from '@/components/cleaning/CleaningLayout';
 import { AuthListener } from '@/components/rental/AuthListener';
 import { GuestOnly } from '@/components/rental/GuestOnly';
@@ -7,6 +8,10 @@ import { RentalLayout } from '@/components/rental/RentalNavbar';
 import { RequireAuth } from '@/components/rental/RequireAuth';
 import { useThemeSync } from '@/hooks/useThemeSync';
 import { AccountPage } from '@/pages/AccountPage';
+import { AdminAppsPage } from '@/pages/admin/AdminAppsPage';
+import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
+import { AdminLeadsPage } from '@/pages/admin/AdminLeadsPage';
+import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
 import { CleanerProfilePage } from '@/pages/CleanerProfilePage';
 import { CleaningDashboardPage } from '@/pages/CleaningDashboardPage';
 import { CleaningSearchPage } from '@/pages/CleaningSearchPage';
@@ -44,6 +49,18 @@ export function App() {
             </GuestOnly>
           }
         />
+        <Route
+          element={
+            <RequireAuth role="admin">
+              <AdminLayout />
+            </RequireAuth>
+          }
+        >
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/leads" element={<AdminLeadsPage />} />
+          <Route path="/admin/apps" element={<AdminAppsPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+        </Route>
         <Route path="/cleaning-app" element={<CleaningLayout />}>
           <Route index element={<CleaningSearchPage />} />
           <Route path="cleaner/:id" element={<CleanerProfilePage />} />

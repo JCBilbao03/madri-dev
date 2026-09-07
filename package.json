@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "deploy": "npm run build && firebase deploy --only hosting",
-    "seed:demo": "node scripts/seed-demo.mjs"
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "seed:admins": "node scripts/seed-admins.mjs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

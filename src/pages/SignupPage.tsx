@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/Button';
 import { authErrorMessage } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
-import { dashboardPath, isUserRole, type UserRole } from '@/types/rental';
+import { dashboardPath, isSignupRole, type SignupRole } from '@/types/rental';
 
 interface SignupValues {
   name: string;
   email: string;
   password: string;
-  role: UserRole | '';
+  role: SignupRole | '';
 }
 
 type FieldName = keyof SignupValues;
@@ -41,7 +41,7 @@ function validate(values: SignupValues): FieldErrors {
     errors.password = 'Use at least six characters.';
   }
 
-  if (!isUserRole(values.role)) {
+  if (!isSignupRole(values.role)) {
     errors.role = 'Choose whether you are renting or listing.';
   }
 
@@ -70,7 +70,7 @@ export function SignupPage() {
       const nextErrors = validate(values);
       setErrors(nextErrors);
 
-      if (Object.keys(nextErrors).length > 0 || !isUserRole(values.role)) {
+      if (Object.keys(nextErrors).length > 0 || !isSignupRole(values.role)) {
         return;
       }
 

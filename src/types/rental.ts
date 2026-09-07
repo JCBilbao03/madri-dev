@@ -1,4 +1,6 @@
-export type UserRole = 'tenant' | 'landlord';
+export type SignupRole = 'tenant' | 'landlord';
+
+export type UserRole = SignupRole | 'admin';
 
 export interface UserProfile {
   uid: string;
@@ -57,11 +59,19 @@ export interface RentalApplication {
   answers: ApplicationAnswer[];
 }
 
-export function isUserRole(value: unknown): value is UserRole {
+export function isSignupRole(value: unknown): value is SignupRole {
   return value === 'tenant' || value === 'landlord';
 }
 
-export function dashboardPath(role: UserRole): '/landlord' | '/tenant' {
+export function isUserRole(value: unknown): value is UserRole {
+  return isSignupRole(value) || value === 'admin';
+}
+
+export function dashboardPath(role: UserRole): '/landlord' | '/tenant' | '/admin' {
+  if (role === 'admin') {
+    return '/admin';
+  }
+
   return role === 'landlord' ? '/landlord' : '/tenant';
 }
 

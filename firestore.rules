@@ -9,7 +9,8 @@ service cloud.firestore {
     // Document ID: Firebase Auth uid
     // Fields:
     //   - uid: string (required, immutable, must equal Auth uid)
-    //   - role: string (required, "tenant"|"landlord", immutable after create)
+    //   - role: string (required, "tenant"|"landlord"|"admin", immutable after create)
+    //     Client create is limited to tenant|landlord. Admin profiles are seeded.
     //   - name: string (required, 1-80 chars)
     //   - email: string (required, valid email, immutable, must match Auth email)
     //   - profileData: map (required, max 20 keys)
@@ -29,6 +30,19 @@ service cloud.firestore {
     //   - answers: list of maps { questionId, prompt, answer } required on create
     //     and aligned with that property's screeningQuestions
     //
+    // Collection: leads
+    // Document ID: leadId (ld-{uuid})
+    // Fields:
+    //   - leadId, appId (marketing|rental|cleaning), source, name, email, summary
+    //   - status: new|contacted|qualified|closed
+    //   - createdAt: ISO string
+    //   - metadata: optional map of small string fields
+    //   - notes: optional list of up to 20 maps { id, text, createdAt, authorId, authorName }
+    //   - assigneeId / assigneeName: optional; empty means unassigned. If set, assigneeId
+    //     must be a users/{uid} document with role admin.
+    // Anyone may create a lead with status "new", no notes, and no assignee. Admins may
+    // read, update fields/notes/assignee, and delete.
+    //
     // ===============================================================
 
     function isAuthenticated() {
@@ -41,6 +55,12 @@ service cloud.firestore {
 
     function callerProfile() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && callerProfile().role == 'admin';
     }
 
     function isLandlord() {
@@ -86,7 +106,7 @@ service cloud.firestore {
       return hasOnlyAllowedFields(['uid', 'role', 'name', 'email', 'profileData']) &&
         data.uid is string &&
         data.uid == request.auth.uid &&
-        data.role in ['tenant', 'landlord'] &&
+        data.role in ['tenant', 'landlord', 'admin'] &&
         data.name is string &&
         data.name.size() >= 1 &&
         data.name.size() <= 80 &&
@@ -216,11 +236,125 @@ service cloud.firestore {
         (!('answers' in data) || isValidAnswersShape(data.answers));
     }
 
+    function isOptionalLeadString(data, key, max) {
+      return !(key in data)
+        || (data[key] is string && data[key].size() >= 1 && data[key].size() <= max);
+    }
+
+    function isValidLeadMetadata(data) {
+      return data.metadata is map
+        && data.metadata.keys().hasOnly(['propertyId', 'applicationId', 'tenantId', 'bookingId', 'cleanerId', 'serviceType', 'address'])
+        && data.metadata.size() <= 8
+        && isOptionalLeadString(data.metadata, 'propertyId', 80)
+        && isOptionalLeadString(data.metadata, 'applicationId', 120)
+        && isOptionalLeadString(data.metadata, 'tenantId', 128)
+        && isOptionalLeadString(data.metadata, 'bookingId', 80)
+        && isOptionalLeadString(data.metadata, 'cleanerId', 80)
+        && isOptionalLeadString(data.metadata, 'serviceType', 80)
+        && isOptionalLeadString(data.metadata, 'address', 120);
+    }
+
+    function isValidLeadNote(item) {
+      return item is map
+        && item.keys().hasOnly(['id', 'text', 'createdAt', 'authorId', 'authorName'])
+        && item.id is string
+        && item.id.size() >= 8
+        && item.id.size() <= 40
+        && item.text is string
+        && item.text.size() >= 1
+        && item.text.size() <= 1000
+        && item.createdAt is string
+        && item.createdAt.size() >= 20
+        && item.createdAt.size() <= 40
+        && item.authorId is string
+        && item.authorId.size() >= 1
+        && item.authorId.size() <= 128
+        && item.authorName is string
+        && item.authorName.size() >= 1
+        && item.authorName.size() <= 80;
+    }
+
+    function isValidLeadNotes(list) {
+      return list is list
+        && list.size() <= 20
+        && (list.size() < 1 || isValidLeadNote(list[0]))
+        && (list.size() < 2 || isValidLeadNote(list[1]))
+        && (list.size() < 3 || isValidLeadNote(list[2]))
+        && (list.size() < 4 || isValidLeadNote(list[3]))
+        && (list.size() < 5 || isValidLeadNote(list[4]))
+        && (list.size() < 6 || isValidLeadNote(list[5]))
+        && (list.size() < 7 || isValidLeadNote(list[6]))
+        && (list.size() < 8 || isValidLeadNote(list[7]))
+        && (list.size() < 9 || isValidLeadNote(list[8]))
+        && (list.size() < 10 || isValidLeadNote(list[9]))
+        && (list.size() < 11 || isValidLeadNote(list[10]))
+        && (list.size() < 12 || isValidLeadNote(list[11]))
+        && (list.size() < 13 || isValidLeadNote(list[12]))
+        && (list.size() < 14 || isValidLeadNote(list[13]))
+        && (list.size() < 15 || isValidLeadNote(list[14]))
+        && (list.size() < 16 || isValidLeadNote(list[15]))
+        && (list.size() < 17 || isValidLeadNote(list[16]))
+        && (list.size() < 18 || isValidLeadNote(list[17]))
+        && (list.size() < 19 || isValidLeadNote(list[18]))
+        && (list.size() < 20 || isValidLeadNote(list[19]));
+    }
+
+    function isValidLeadAssignee(data) {
+      return (!('assigneeId' in data) || (data.assigneeId is string && data.assigneeId.size() <= 128))
+        && (!('assigneeName' in data) || (data.assigneeName is string && data.assigneeName.size() <= 80))
+        && (
+          (
+            (!('assigneeId' in data) || data.assigneeId.size() == 0)
+            && (!('assigneeName' in data) || data.assigneeName.size() == 0)
+          )
+          || (
+            data.assigneeId is string
+            && data.assigneeId.size() > 0
+            && data.assigneeId.size() <= 128
+            && data.assigneeName is string
+            && data.assigneeName.size() >= 1
+            && data.assigneeName.size() <= 80
+            && exists(/databases/$(database)/documents/users/$(data.assigneeId))
+            && get(/databases/$(database)/documents/users/$(data.assigneeId)).data.role == 'admin'
+          )
+        );
+    }
+
+    function isValidLeadShape(data) {
+      return hasOnlyAllowedFields(['leadId', 'appId', 'source', 'name', 'email', 'summary', 'status', 'createdAt', 'metadata', 'notes', 'assigneeId', 'assigneeName']) &&
+        data.leadId is string &&
+        data.leadId.size() >= 8 &&
+        data.leadId.size() <= 80 &&
+        data.appId in ['marketing', 'rental', 'cleaning'] &&
+        data.source in ['contact-form', 'rental-application', 'cleaning-booking'] &&
+        (
+          (data.appId == 'marketing' && data.source == 'contact-form') ||
+          (data.appId == 'rental' && data.source == 'rental-application') ||
+          (data.appId == 'cleaning' && data.source == 'cleaning-booking')
+        ) &&
+        data.name is string &&
+        data.name.size() >= 1 &&
+        data.name.size() <= 80 &&
+        isValidEmail(data.email) &&
+        data.email.size() <= 120 &&
+        data.summary is string &&
+        data.summary.size() >= 1 &&
+        data.summary.size() <= 400 &&
+        data.status in ['new', 'contacted', 'qualified', 'closed'] &&
+        data.createdAt is string &&
+        data.createdAt.size() >= 20 &&
+        data.createdAt.size() <= 40 &&
+        isValidLeadMetadata(data) &&
+        (!('notes' in data) || isValidLeadNotes(data.notes)) &&
+        isValidLeadAssignee(data);
+    }
+
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      allow read: if isOwner(userId) || isAdmin();
 
       allow create: if isOwner(userId)
         && isValidUser(request.resource.data)
+        && request.resource.data.role in ['tenant', 'landlord']
         && request.resource.data.uid == userId;
 
       allow update: if isOwner(userId)
@@ -241,7 +375,7 @@ service cloud.firestore {
 
     match /applications/{applicationId} {
       allow read: if isAuthenticated() && (
-        resource.data.tenantId == request.auth.uid || isLandlord()
+        resource.data.tenantId == request.auth.uid || isLandlord() || isAdmin()
       );
 
       allow create: if isTenant()
@@ -263,6 +397,28 @@ service cloud.firestore {
         );
 
       allow delete: if false;
+    }
+
+    match /leads/{leadId} {
+      allow read: if isAdmin();
+
+      allow create: if isValidLeadShape(request.resource.data)
+        && request.resource.data.leadId == leadId
+        && (
+          (
+            request.resource.data.status == 'new'
+            && (!('notes' in request.resource.data) || request.resource.data.notes.size() == 0)
+            && (!('assigneeId' in request.resource.data) || request.resource.data.assigneeId.size() == 0)
+            && (!('assigneeName' in request.resource.data) || request.resource.data.assigneeName.size() == 0)
+          )
+          || isAdmin()
+        );
+
+      allow update: if isAdmin()
+        && isValidLeadShape(request.resource.data)
+        && areImmutableFieldsUnchanged(['leadId', 'createdAt']);
+
+      allow delete: if isAdmin();
     }
 
     match /{document=**} {

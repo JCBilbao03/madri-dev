@@ -1,3 +1,5 @@
+import { createLead } from '@/lib/leads';
+
 export interface ProjectInquiry {
   name: string;
   email: string;
@@ -10,18 +12,16 @@ export interface InquiryResult {
 }
 
 /**
- * Submits a project inquiry.
- *
- * TODO: point this at a real endpoint — a Firebase Cloud Function, a Firestore
- * `inquiries` collection write, or a form service such as Formspree. Until then
- * it resolves locally so the form's success and error states stay demonstrable.
+ * Persists a project inquiry as a marketing lead in Firestore.
  */
 export async function submitProjectInquiry(inquiry: ProjectInquiry): Promise<InquiryResult> {
-  await new Promise((resolve) => setTimeout(resolve, 900));
-
-  if (import.meta.env.DEV) {
-    console.info('[MadriDev] Project inquiry (not yet sent anywhere):', inquiry);
-  }
+  await createLead({
+    appId: 'marketing',
+    source: 'contact-form',
+    name: inquiry.name,
+    email: inquiry.email,
+    summary: inquiry.details,
+  });
 
   return {
     ok: true,

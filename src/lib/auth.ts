@@ -7,16 +7,16 @@ import {
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 import { auth, db } from '@/lib/firebase';
-import { isUserRole, type UserProfile, type UserRole } from '@/types/rental';
+import { isSignupRole, isUserRole, type SignupRole, type UserProfile } from '@/types/rental';
 
 export interface SignUpInput {
   name: string;
   email: string;
   password: string;
-  role: UserRole;
+  role: SignupRole;
 }
 
-function asUserProfile(uid: string, data: Record<string, unknown>): UserProfile | null {
+export function asUserProfile(uid: string, data: Record<string, unknown>): UserProfile | null {
   if (
     data.uid !== uid ||
     !isUserRole(data.role) ||
@@ -72,6 +72,10 @@ export async function signUpWithEmail({
   password,
   role,
 }: SignUpInput): Promise<UserProfile> {
+  if (!isSignupRole(role)) {
+    throw new Error('Choose whether you are renting or listing.');
+  }
+
   const credential = await createUserWithEmailAndPassword(auth, email, password);
   const { uid } = credential.user;
 

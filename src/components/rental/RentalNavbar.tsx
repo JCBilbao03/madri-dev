@@ -8,6 +8,7 @@ import { Container } from '@/components/ui/Container';
 import { Logo } from '@/components/ui/Logo';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
+import type { UserRole } from '@/types/rental';
 
 const tenantLinks = [
   { to: '/tenant', label: 'Listings' },
@@ -20,6 +21,23 @@ const landlordLinks = [
   { to: '/landlord', label: 'Dashboard' },
   { to: '/account', label: 'Account' },
 ];
+
+const adminLinks = [
+  { to: '/admin', label: 'Admin' },
+  { to: '/account', label: 'Account' },
+];
+
+function linksForRole(role: UserRole | null): { to: string; label: string }[] {
+  if (role === 'admin') {
+    return adminLinks;
+  }
+
+  if (role === 'landlord') {
+    return landlordLinks;
+  }
+
+  return tenantLinks;
+}
 
 function navClassName({ isActive }: { isActive: boolean }): string {
   return cn(
@@ -34,7 +52,7 @@ export function RentalNavbar() {
   const handleSignOut = useCallback(() => {
     void signOut();
   }, [signOut]);
-  const links = role === 'landlord' ? landlordLinks : tenantLinks;
+  const links = linksForRole(role);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-base/80 backdrop-blur-xl">

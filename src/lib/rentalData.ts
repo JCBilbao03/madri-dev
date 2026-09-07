@@ -10,7 +10,9 @@ import {
 } from 'firebase/firestore';
 
 import { DEMO_APPLICATIONS, DEMO_PROPERTIES } from '@/data/demoListings';
+import { fetchUserProfile } from '@/lib/auth';
 import { db } from '@/lib/firebase';
+import { captureLead } from '@/lib/leads';
 import {
   applicationDocId,
   asApplicationAnswers,
@@ -158,6 +160,25 @@ export async function submitApplication(
   };
 
   await setDoc(doc(db, 'applications', applicationId), application);
+
+  try {
+    const [profile, listing] = await Promise.all([fetchUserProfile(tenantId), fetchProperty(propertyId)]);
+    captureLead({
+      appId: 'rental',
+      source: 'rental-application',
+      name: profile?.name ?? 'Tenant',
+      email: profile?.email ?? 'tenant@rental.local',
+      summary: `Application for ${listing?.title ?? propertyId}`,
+      metadata: {
+        propertyId,
+        applicationId,
+        tenantId,
+      },
+    });
+  } catch {
+    // Application is already saved; lead capture must not fail the submit.
+  }
+
   return application;
 }
 
