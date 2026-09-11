@@ -1,6 +1,6 @@
-# MadriDev
+# MadriBuild
 
-Marketing site for MadriDev, a web application development agency. Single-page, dark by
+Marketing site for MadriBuild, a web application development agency. Single-page, dark by
 default, built with React and deployed to Firebase Hosting.
 
 ## Stack

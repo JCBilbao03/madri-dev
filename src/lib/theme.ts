@@ -1,6 +1,24 @@
 export type Theme = 'dark' | 'light';
 
-export const THEME_STORAGE_KEY = 'madridev-theme';
+export const THEME_STORAGE_KEY = 'madribuild-theme';
+export const LEGACY_THEME_STORAGE_KEY = 'madridev-theme';
+
+/**
+ * Copies a saved theme from the pre-rebrand key so existing visitors keep their preference.
+ */
+function migrateLegacyTheme(): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const legacy = window.localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
+    if (legacy && !window.localStorage.getItem(THEME_STORAGE_KEY)) {
+      window.localStorage.setItem(THEME_STORAGE_KEY, legacy);
+      window.localStorage.removeItem(LEGACY_THEME_STORAGE_KEY);
+    }
+  } catch {
+    // Private mode or blocked storage — migration is best-effort.
+  }
+}
 
 /**
  * Resolves the visitor's theme before first paint. The same logic runs as an
@@ -12,6 +30,8 @@ export const THEME_STORAGE_KEY = 'madridev-theme';
  */
 export function readStoredTheme(): Theme {
   if (typeof window === 'undefined') return 'dark';
+
+  migrateLegacyTheme();
 
   try {
     return window.localStorage.getItem(THEME_STORAGE_KEY) === 'light' ? 'light' : 'dark';

@@ -85,7 +85,7 @@ export async function createLead(input: NewLeadInput): Promise<Lead> {
 export function captureLead(input: NewLeadInput): void {
   void createLead(input).catch(() => {
     if (import.meta.env.DEV) {
-      console.warn('[MadriDev] Lead capture failed', input.source);
+      console.warn('[MadriBuild] Lead capture failed', input.source);
     }
   });
 }

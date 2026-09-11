@@ -9,10 +9,10 @@ export const navLinks: NavLink[] = [
   { label: 'Founders', href: '#founders' },
 ];
 
-export const CONTACT_EMAIL = 'hello@madridev.com';
+export const CONTACT_EMAIL = 'hello@madribuild.com';
 
 export const socialLinks: NavLink[] = [
-  { label: 'GitHub', href: 'https://github.com/madridev' },
-  { label: 'LinkedIn', href: 'https://linkedin.com/company/madridev' },
-  { label: 'X', href: 'https://x.com/madridev' },
+  { label: 'GitHub', href: 'https://github.com/madribuild' },
+  { label: 'LinkedIn', href: 'https://linkedin.com/company/madribuild' },
+  { label: 'X', href: 'https://x.com/madribuild' },
 ];

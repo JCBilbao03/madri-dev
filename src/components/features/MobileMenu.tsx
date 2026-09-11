@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useRef } from 'react';
 
+import { StartProjectButton } from '@/components/features/StartProjectButton';
 import { Button } from '@/components/ui/Button';
 import { CONTACT_EMAIL, navLinks } from '@/data/navigation';
 import { useDismissableLayer } from '@/hooks/useDismissableLayer';
@@ -57,9 +58,7 @@ export function MobileMenu() {
               Browse rentals
             </Button>
 
-            <Button size="lg" className="mt-3 w-full" onClick={handleStartProject}>
-              Start a Project
-            </Button>
+            <StartProjectButton size="lg" className="mt-3 w-full" onClick={handleStartProject} />
 
             <a
               href={`mailto:${CONTACT_EMAIL}`}

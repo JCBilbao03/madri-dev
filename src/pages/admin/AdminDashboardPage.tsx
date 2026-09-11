@@ -75,7 +75,7 @@ export function AdminDashboardPage() {
           {name ? `Welcome, ${name}` : 'Overview'}
         </h1>
         <p className="mt-3 max-w-xl text-ink-muted">
-          Monitor users and leads across the MadriDev site, rental marketplace, and cleaning app.
+          Monitor users and leads across the MadriBuild site, rental marketplace, and cleaning app.
         </p>
 
         {isLoading ? (
@@ -103,7 +103,7 @@ export function AdminDashboardPage() {
             </div>
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard label="Total" value={leadStats.total} />
-              <StatCard label="MadriDev site" value={leadStats.marketing} />
+              <StatCard label="MadriBuild site" value={leadStats.marketing} />
               <StatCard label="Rental" value={leadStats.rental} />
               <StatCard label="Cleaning" value={leadStats.cleaning} />
             </div>

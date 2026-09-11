@@ -1,4 +1,4 @@
-# MadriDev Brand Guidelines
+# MadriBuild Brand Guidelines
 
 No brand file was supplied, so this system was defined from scratch. It is the single
 source of truth for the landing page — the tokens below are declared in the `@theme`

@@ -10,7 +10,7 @@ export interface AdminApp {
 export const ADMIN_APPS: AdminApp[] = [
   {
     id: 'marketing',
-    name: 'MadriDev site',
+    name: 'MadriBuild site',
     description: 'Agency landing page and project inquiries from the contact form.',
     href: '/',
   },

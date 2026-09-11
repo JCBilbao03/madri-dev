@@ -80,7 +80,7 @@ export function LoginPage() {
   const describedBy = (field: FieldName) => (errors[field] ? `${fieldId}-${field}-error` : undefined);
 
   return (
-    <AuthShell title="Sign in" description="Continue to the MadriDev rental marketplace.">
+    <AuthShell title="Sign in" description="Continue to the MadriBuild rental marketplace.">
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         <div>
           <label htmlFor={`${fieldId}-email`} className="mb-2 block text-sm font-medium text-ink">

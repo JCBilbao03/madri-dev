@@ -81,7 +81,7 @@ export interface LeadUpdateInput {
 }
 
 export const APP_LABELS: Record<AppId, string> = {
-  marketing: 'MadriDev site',
+  marketing: 'MadriBuild site',
   rental: 'Rental',
   cleaning: 'Cleaning',
 };

@@ -2,6 +2,7 @@ import { Menu, X } from 'lucide-react';
 
 import { MobileMenu } from '@/components/features/MobileMenu';
 import { ThemeToggle } from '@/components/features/ThemeToggle';
+import { StartProjectButton } from '@/components/features/StartProjectButton';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Logo } from '@/components/ui/Logo';
@@ -13,7 +14,6 @@ import { useUIStore } from '@/store/useUIStore';
 export function Header() {
   const isMobileMenuOpen = useUIStore((state) => state.isMobileMenuOpen);
   const toggleMobileMenu = useUIStore((state) => state.toggleMobileMenu);
-  const openContactModal = useUIStore((state) => state.openContactModal);
   const hasScrolled = useHasScrolled();
 
   return (
@@ -49,9 +49,7 @@ export function Header() {
           <Button size="sm" variant="secondary" to="/login" className="hidden md:inline-flex">
             Browse rentals
           </Button>
-          <Button size="sm" className="hidden md:inline-flex" onClick={openContactModal}>
-            Start a Project
-          </Button>
+          <StartProjectButton size="sm" className="hidden md:inline-flex" />
 
           <button
             type="button"

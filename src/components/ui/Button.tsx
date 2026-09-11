@@ -11,6 +11,7 @@ const buttonVariants = cva(
       variant: {
         primary:
           'bg-accent text-base shadow-[0_0_0_1px_rgba(91,140,255,0.4),0_10px_30px_-12px_rgba(91,140,255,0.8)] hover:bg-accent-soft',
+        cta: 'btn-cta-shine font-semibold shadow-[0_0_0_1px_rgba(139,171,255,0.45),0_8px_28px_-10px_rgba(91,140,255,0.85)] hover:brightness-110 hover:shadow-[0_0_0_1px_rgba(139,171,255,0.55),0_12px_36px_-8px_rgba(91,140,255,0.95)] active:scale-[0.98]',
         secondary: 'border border-line bg-surface text-ink hover:border-accent/60 hover:bg-surface-raised',
         ghost: 'text-ink-muted hover:bg-surface hover:text-ink',
       },

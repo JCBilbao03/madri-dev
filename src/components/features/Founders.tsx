@@ -2,6 +2,16 @@ import { Reveal } from '@/components/shared/Reveal';
 import { Container } from '@/components/ui/Container';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { founders } from '@/data/founders';
+import { cn } from '@/lib/utils';
+
+function founderInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 export function Founders() {
   return (
@@ -13,23 +23,36 @@ export function Founders() {
             title="The people you"
             titleAccent="actually work with"
             headingId="founders-heading"
-            description="No account managers and no handoffs to a junior team after the contract is signed. You work directly with the two of us."
+            description="No account managers and no handoffs to a junior team after the contract is signed. You work directly with the four of us."
           />
         </Reveal>
 
-        <ul className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <ul className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {founders.map((founder, index) => (
             <Reveal as="li" key={founder.id} delay={index * 0.08}>
               <article className="group h-full overflow-hidden rounded-2xl border border-line bg-surface transition duration-300 hover:border-accent/50">
                 <div className="relative aspect-[4/5] overflow-hidden">
-                  <img
-                    src={founder.photo}
-                    alt={founder.photoAlt}
-                    loading="lazy"
-                    decoding="async"
-                    style={{ objectPosition: founder.photoPosition ?? 'top' }}
-                    className="size-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                  />
+                  {founder.photo ? (
+                    <img
+                      src={founder.photo}
+                      alt={founder.photoAlt}
+                      loading="lazy"
+                      decoding="async"
+                      style={{ objectPosition: founder.photoPosition ?? 'top' }}
+                      className="size-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                    />
+                  ) : (
+                    <div
+                      aria-hidden="true"
+                      className={cn(
+                        'flex size-full items-center justify-center bg-gradient-to-br from-accent/20 via-surface-raised to-accent-alt/15',
+                      )}
+                    >
+                      <span className="font-display text-5xl font-bold tracking-tight text-gradient">
+                        {founderInitials(founder.name)}
+                      </span>
+                    </div>
+                  )}
                   <div
                     aria-hidden="true"
                     className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-surface to-transparent"

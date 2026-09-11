@@ -22,20 +22,20 @@ export function Logo({ className, to }: LogoProps) {
       >
         M
       </span>
-      <span className="font-display text-ink">MadriDev</span>
+      <span className="font-display text-ink">MadriBuild</span>
     </>
   );
 
   if (to) {
     return (
-      <Link to={to} className={classes} aria-label="MadriDev — home">
+      <Link to={to} className={classes} aria-label="MadriBuild — home">
         {mark}
       </Link>
     );
   }
 
   return (
-    <a href="#top" className={classes} aria-label="MadriDev — back to top">
+    <a href="#top" className={classes} aria-label="MadriBuild — back to top">
       {mark}
     </a>
   );

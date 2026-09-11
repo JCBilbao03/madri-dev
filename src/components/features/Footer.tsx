@@ -65,7 +65,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col gap-3 border-t border-line pt-6 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} MadriDev. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} MadriBuild. All rights reserved.</p>
           <ul className="flex gap-6">
             <li>
               <a href="#top" className="transition hover:text-ink">

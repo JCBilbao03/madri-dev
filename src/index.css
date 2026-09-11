@@ -72,9 +72,52 @@
   .text-gradient {
     @apply bg-gradient-to-r from-accent-soft via-accent to-accent-alt bg-clip-text text-transparent;
   }
+
+  .btn-cta-shine {
+    @apply relative overflow-hidden text-white;
+    background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-accent) 88%, #0a0a0b),
+      var(--color-accent),
+      color-mix(in srgb, var(--color-accent-alt) 55%, var(--color-accent))
+    );
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
+  }
+
+  :root.light .btn-cta-shine {
+    background-image: linear-gradient(
+      to right,
+      var(--color-accent-soft),
+      var(--color-accent),
+      color-mix(in srgb, var(--color-accent-alt) 80%, #0a0a0b)
+    );
+  }
+
+  .btn-cta-shine::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 65%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+
+  .btn-cta-shine:hover::before {
+    transform: translateX(120%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .btn-cta-shine::before {
+    display: none;
+  }
+
   html {
     scroll-behavior: auto;
   }

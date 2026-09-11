@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-    <title>MadriDev — Building High-Performance Web Applications</title>
+    <title>MadriBuild — Building High-Performance Web Applications</title>
     <meta
       name="description"
-      content="MadriDev is a web application development agency. We design and ship custom web apps, SaaS products, and performance work that moves business metrics."
+      content="MadriBuild is a web application development agency. We design and ship custom web apps, SaaS products, and performance work that moves business metrics."
     />
     <meta name="theme-color" content="#0A0A0B" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="MadriDev — Building High-Performance Web Applications" />
+    <meta property="og:title" content="MadriBuild — Building High-Performance Web Applications" />
     <meta
       property="og:description"
       content="We design and ship custom web apps, SaaS products, and performance work that moves business metrics."
@@ -31,7 +31,10 @@
       // Resolve the theme before first paint. Mirrors readStoredTheme() in src/lib/theme.ts.
       (function () {
         try {
-          var theme = localStorage.getItem('madridev-theme') === 'light' ? 'light' : 'dark';
+          var themeKey = 'madribuild-theme';
+          var legacyKey = 'madridev-theme';
+          var stored = localStorage.getItem(themeKey) || localStorage.getItem(legacyKey);
+          var theme = stored === 'light' ? 'light' : 'dark';
           document.documentElement.classList.toggle('dark', theme === 'dark');
           document.documentElement.classList.toggle('light', theme === 'light');
         } catch (e) {

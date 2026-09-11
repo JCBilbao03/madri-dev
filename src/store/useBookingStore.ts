@@ -12,6 +12,26 @@ import {
   type CleaningService,
 } from '@/types/cleaning';
 
+const BOOKING_STORAGE_KEY = 'madribuild-cleaning-bookings';
+const LEGACY_BOOKING_STORAGE_KEY = 'madridev-cleaning-bookings';
+
+/** One-time migration from the pre-rebrand persist key. */
+function migrateLegacyBookingStorage(): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const legacy = window.localStorage.getItem(LEGACY_BOOKING_STORAGE_KEY);
+    if (legacy && !window.localStorage.getItem(BOOKING_STORAGE_KEY)) {
+      window.localStorage.setItem(BOOKING_STORAGE_KEY, legacy);
+      window.localStorage.removeItem(LEGACY_BOOKING_STORAGE_KEY);
+    }
+  } catch {
+    // Private mode or blocked storage — migration is best-effort.
+  }
+}
+
+migrateLegacyBookingStorage();
+
 const EMPTY_DRAFT: BookingDraft = {
   cleanerId: '',
   serviceType: '',
@@ -150,7 +170,7 @@ export const useBookingStore = create<BookingState>()(
         })),
     }),
     {
-      name: 'madridev-cleaning-bookings',
+      name: BOOKING_STORAGE_KEY,
       partialize: (state) => ({ bookings: state.bookings }),
       merge: (persisted, current) => {
         const raw = persisted as Partial<BookingState> | undefined;
