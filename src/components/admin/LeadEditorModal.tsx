@@ -7,12 +7,17 @@ import {
   APP_IDS,
   APP_LABELS,
   isAppId,
+  isLeadSource,
   isLeadStatus,
+  LEAD_SOURCE_GROUPS,
+  LEAD_SOURCE_LABELS,
   LEAD_STATUSES,
+  OTHER_LEAD_SOURCE,
   SOURCE_BY_APP,
   type AppId,
   type Lead,
   type LeadAdminOption,
+  type LeadSource,
   type LeadStatus,
   type LeadUpdateInput,
 } from '@/types/admin';
@@ -25,6 +30,8 @@ interface LeadFormValues {
   email: string;
   summary: string;
   appId: AppId;
+  source: LeadSource;
+  sourceDetail: string;
   status: LeadStatus;
   assigneeId: string;
 }
@@ -37,6 +44,8 @@ const EMPTY: LeadFormValues = {
   email: '',
   summary: '',
   appId: 'marketing',
+  source: 'contact-form',
+  sourceDetail: '',
   status: 'new',
   assigneeId: '',
 };
@@ -47,6 +56,8 @@ function valuesFromLead(lead: Lead): LeadFormValues {
     email: lead.email,
     summary: lead.summary,
     appId: lead.appId,
+    source: lead.source,
+    sourceDetail: lead.sourceDetail,
     status: lead.status,
     assigneeId: lead.assigneeId,
   };
@@ -59,10 +70,12 @@ function validate(values: LeadFormValues): FieldErrors {
     errors.name = 'Add a name.';
   }
 
-  if (!values.email.trim()) {
-    errors.email = 'Add an email.';
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email.trim())) {
+  if (values.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email.trim())) {
     errors.email = 'That email address does not look right.';
+  }
+
+  if (values.source === OTHER_LEAD_SOURCE && !values.sourceDetail.trim()) {
+    errors.sourceDetail = 'Describe where this lead came from.';
   }
 
   if (values.summary.trim().length < 8) {
@@ -88,6 +101,7 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
   const [formError, setFormError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const isEdit = lead !== null;
+  const isOtherSource = values.source === OTHER_LEAD_SOURCE;
 
   useEffect(() => {
     if (!isOpen) {
@@ -101,7 +115,22 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
-    setValues((current) => ({ ...current, [name]: value }));
+
+    setValues((current) => {
+      if (name === 'appId' && isAppId(value)) {
+        return { ...current, appId: value, source: SOURCE_BY_APP[value], sourceDetail: '' };
+      }
+
+      if (name === 'source' && isLeadSource(value)) {
+        return {
+          ...current,
+          source: value,
+          sourceDetail: value === OTHER_LEAD_SOURCE ? current.sourceDetail : '',
+        };
+      }
+
+      return { ...current, [name]: value };
+    });
     setErrors((current) => ({ ...current, [name as FieldName]: undefined }));
     setFormError('');
   }, []);
@@ -111,7 +140,12 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
       event.preventDefault();
       const nextErrors = validate(values);
       setErrors(nextErrors);
-      if (Object.keys(nextErrors).length > 0 || !isAppId(values.appId) || !isLeadStatus(values.status)) {
+      if (
+        Object.keys(nextErrors).length > 0 ||
+        !isAppId(values.appId) ||
+        !isLeadSource(values.source) ||
+        !isLeadStatus(values.status)
+      ) {
         return;
       }
 
@@ -121,7 +155,8 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
         email: values.email.trim(),
         summary: values.summary.trim(),
         appId: values.appId,
-        source: SOURCE_BY_APP[values.appId],
+        source: values.source,
+        sourceDetail: values.source === OTHER_LEAD_SOURCE ? values.sourceDetail.trim() : '',
         status: values.status,
         assigneeId: assigned?.uid ?? '',
         assigneeName: assigned?.name.trim() ?? '',
@@ -169,7 +204,7 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
 
         <div>
           <label htmlFor={`${fieldId}-email`} className="mb-2 block text-sm font-medium text-ink">
-            Email
+            Email <span className="font-normal text-ink-muted">(optional)</span>
           </label>
           <input
             id={`${fieldId}-email`}
@@ -182,7 +217,7 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
           {errors.email ? <p className="mt-1.5 text-sm text-danger">{errors.email}</p> : null}
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor={`${fieldId}-appId`} className="mb-2 block text-sm font-medium text-ink">
               App
@@ -192,6 +227,22 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
                 <option key={id} value={id}>
                   {APP_LABELS[id]}
                 </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor={`${fieldId}-source`} className="mb-2 block text-sm font-medium text-ink">
+              Source
+            </label>
+            <select id={`${fieldId}-source`} name="source" value={values.source} onChange={handleChange} className={fieldClasses}>
+              {LEAD_SOURCE_GROUPS.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.sources.map((source) => (
+                    <option key={source} value={source}>
+                      {LEAD_SOURCE_LABELS[source]}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
@@ -214,6 +265,23 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
             </select>
           </div>
         </div>
+
+        {isOtherSource ? (
+          <div>
+            <label htmlFor={`${fieldId}-sourceDetail`} className="mb-2 block text-sm font-medium text-ink">
+              Source details
+            </label>
+            <input
+              id={`${fieldId}-sourceDetail`}
+              name="sourceDetail"
+              value={values.sourceDetail}
+              onChange={handleChange}
+              placeholder="e.g. Referral from a partner, trade show, cold call"
+              className={cn(fieldClasses, errors.sourceDetail && 'border-danger')}
+            />
+            {errors.sourceDetail ? <p className="mt-1.5 text-sm text-danger">{errors.sourceDetail}</p> : null}
+          </div>
+        ) : null}
 
         <div>
           <label htmlFor={`${fieldId}-assigneeId`} className="mb-2 block text-sm font-medium text-ink">
@@ -259,7 +327,7 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
           <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" className="w-full sm:w-auto" disabled={isSaving}>
+          <Button type="submit" variant="cta" className="w-full sm:w-auto" disabled={isSaving}>
             {isSaving ? 'Saving…' : isEdit ? 'Save changes' : 'Add lead'}
           </Button>
         </div>

@@ -88,6 +88,12 @@ service cloud.firestore {
         email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$');
     }
 
+    function isOptionalEmail(email) {
+      return email is string
+        && email.size() <= 120
+        && (email.size() == 0 || isValidEmail(email));
+    }
+
     function isValidSavedIds(value) {
       return value is list
         && value.size() <= 40;
@@ -334,23 +340,39 @@ service cloud.firestore {
         );
     }
 
+    function isValidLeadSource(data) {
+      return data.source in [
+          'contact-form',
+          'rental-application',
+          'cleaning-booking',
+          'facebook',
+          'instagram',
+          'linkedin',
+          'whatsapp',
+          'other'
+        ]
+        && (
+          (data.source == 'other'
+            && 'sourceDetail' in data
+            && data.sourceDetail is string
+            && data.sourceDetail.size() >= 1
+            && data.sourceDetail.size() <= 80)
+          || (data.source != 'other'
+            && (!('sourceDetail' in data) || (data.sourceDetail is string && data.sourceDetail.size() == 0)))
+        );
+    }
+
     function isValidLeadShape(data) {
-      return hasOnlyAllowedFields(['leadId', 'appId', 'source', 'name', 'email', 'summary', 'status', 'createdAt', 'metadata', 'notes', 'assigneeId', 'assigneeName']) &&
+      return hasOnlyAllowedFields(['leadId', 'appId', 'source', 'sourceDetail', 'name', 'email', 'summary', 'status', 'createdAt', 'metadata', 'notes', 'assigneeId', 'assigneeName']) &&
         data.leadId is string &&
         data.leadId.size() >= 8 &&
         data.leadId.size() <= 80 &&
         data.appId in ['marketing', 'rental', 'cleaning'] &&
-        data.source in ['contact-form', 'rental-application', 'cleaning-booking'] &&
-        (
-          (data.appId == 'marketing' && data.source == 'contact-form') ||
-          (data.appId == 'rental' && data.source == 'rental-application') ||
-          (data.appId == 'cleaning' && data.source == 'cleaning-booking')
-        ) &&
+        isValidLeadSource(data) &&
         data.name is string &&
         data.name.size() >= 1 &&
         data.name.size() <= 80 &&
-        isValidEmail(data.email) &&
-        data.email.size() <= 120 &&
+        isOptionalEmail(data.email) &&
         data.summary is string &&
         data.summary.size() >= 1 &&
         data.summary.size() <= 400 &&

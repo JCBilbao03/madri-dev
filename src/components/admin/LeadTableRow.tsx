@@ -2,7 +2,7 @@ import { LeadAssigneeSelect } from '@/components/admin/LeadAssigneeSelect';
 import { LeadRowActions } from '@/components/admin/LeadRowActions';
 import { LeadStatusBadge } from '@/components/admin/LeadStatusBadge';
 import { LeadStatusSelect } from '@/components/admin/LeadStatusSelect';
-import { APP_LABELS, formatLeadDate, leadAssigneeLabel, LEAD_SOURCE_LABELS } from '@/types/admin';
+import { APP_LABELS, formatLeadDate, formatLeadSource, leadAssigneeLabel } from '@/types/admin';
 
 import type { LeadItemProps } from '@/components/admin/LeadCard';
 
@@ -24,12 +24,16 @@ export function LeadTableRow({ lead, admins = [], onStatus, onAssignee, onEdit, 
       </td>
       <td className="max-w-[10rem] px-3 py-2.5 align-top font-medium text-ink">{lead.name}</td>
       <td className="max-w-[14rem] px-3 py-2.5 align-top">
-        <a href={`mailto:${lead.email}`} className="break-all text-accent-soft hover:text-ink">
-          {lead.email}
-        </a>
+        {lead.email ? (
+          <a href={`mailto:${lead.email}`} className="break-all text-accent-soft hover:text-ink">
+            {lead.email}
+          </a>
+        ) : (
+          <span className="text-ink-muted">—</span>
+        )}
       </td>
       <td className="whitespace-nowrap px-3 py-2.5 align-top text-ink">{APP_LABELS[lead.appId]}</td>
-      <td className="whitespace-nowrap px-3 py-2.5 align-top text-ink-muted">{LEAD_SOURCE_LABELS[lead.source]}</td>
+      <td className="whitespace-nowrap px-3 py-2.5 align-top text-ink-muted">{formatLeadSource(lead)}</td>
       <td className="min-w-[16rem] max-w-[28rem] px-3 py-2.5 align-top text-ink">{lead.summary}</td>
       <td className="whitespace-nowrap px-3 py-2.5 align-top">
         {onStatus ? (

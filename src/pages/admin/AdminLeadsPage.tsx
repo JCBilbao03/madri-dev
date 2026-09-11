@@ -87,6 +87,7 @@ export function AdminLeadsPage() {
         lead.name.toLowerCase().includes(needle) ||
         lead.email.toLowerCase().includes(needle) ||
         lead.summary.toLowerCase().includes(needle) ||
+        lead.sourceDetail.toLowerCase().includes(needle) ||
         lead.notes.some((note) => note.text.toLowerCase().includes(needle)) ||
         lead.assigneeName.toLowerCase().includes(needle);
 
@@ -228,7 +229,7 @@ export function AdminLeadsPage() {
               Add, edit, and delete leads, assign them to an admin, or attach follow-up notes.
             </p>
           </div>
-          <Button className="w-full sm:w-auto" onClick={openCreate}>
+          <Button variant="cta" className="w-full sm:w-auto" onClick={openCreate}>
             Add lead
           </Button>
         </div>

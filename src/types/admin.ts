@@ -2,7 +2,20 @@ export const APP_IDS = ['marketing', 'rental', 'cleaning'] as const;
 
 export type AppId = (typeof APP_IDS)[number];
 
-export const LEAD_SOURCES = ['contact-form', 'rental-application', 'cleaning-booking'] as const;
+export const APP_LEAD_SOURCES = ['contact-form', 'rental-application', 'cleaning-booking'] as const;
+
+export const SOCIAL_LEAD_SOURCES = ['facebook', 'instagram'] as const;
+
+export const BUSINESS_LEAD_SOURCES = ['linkedin', 'whatsapp'] as const;
+
+export const OTHER_LEAD_SOURCE = 'other' as const;
+
+export const LEAD_SOURCES = [
+  ...APP_LEAD_SOURCES,
+  ...SOCIAL_LEAD_SOURCES,
+  ...BUSINESS_LEAD_SOURCES,
+  OTHER_LEAD_SOURCE,
+] as const;
 
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 
@@ -46,6 +59,8 @@ export interface Lead {
   leadId: string;
   appId: AppId;
   source: LeadSource;
+  /** Custom label when source is "other". */
+  sourceDetail: string;
   name: string;
   email: string;
   summary: string;
@@ -60,6 +75,7 @@ export interface Lead {
 export interface NewLeadInput {
   appId: AppId;
   source: LeadSource;
+  sourceDetail?: string;
   name: string;
   email: string;
   summary: string;
@@ -72,6 +88,7 @@ export interface NewLeadInput {
 export interface LeadUpdateInput {
   appId: AppId;
   source: LeadSource;
+  sourceDetail: string;
   name: string;
   email: string;
   summary: string;
@@ -90,7 +107,19 @@ export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   'contact-form': 'Contact form',
   'rental-application': 'Rental application',
   'cleaning-booking': 'Cleaning booking',
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+  linkedin: 'LinkedIn',
+  whatsapp: 'WhatsApp',
+  other: 'Other',
 };
+
+export const LEAD_SOURCE_GROUPS = [
+  { label: 'App forms', sources: APP_LEAD_SOURCES },
+  { label: 'Social media', sources: SOCIAL_LEAD_SOURCES },
+  { label: 'Business apps', sources: BUSINESS_LEAD_SOURCES },
+  { label: 'Other', sources: [OTHER_LEAD_SOURCE] as const },
+] as const;
 
 export function isAppId(value: unknown): value is AppId {
   return typeof value === 'string' && (APP_IDS as readonly string[]).includes(value);
@@ -181,6 +210,7 @@ export function asLead(id: string, data: Record<string, unknown>): Lead | null {
     leadId: typeof data.leadId === 'string' ? data.leadId : id,
     appId: data.appId,
     source: data.source,
+    sourceDetail: typeof data.sourceDetail === 'string' ? data.sourceDetail : '',
     name: data.name,
     email: data.email,
     summary: data.summary,
@@ -191,6 +221,14 @@ export function asLead(id: string, data: Record<string, unknown>): Lead | null {
     assigneeId: typeof data.assigneeId === 'string' ? data.assigneeId : '',
     assigneeName: typeof data.assigneeName === 'string' ? data.assigneeName : '',
   };
+}
+
+export function formatLeadSource(lead: Pick<Lead, 'source' | 'sourceDetail'>): string {
+  if (lead.source === 'other') {
+    return lead.sourceDetail.trim() || LEAD_SOURCE_LABELS.other;
+  }
+
+  return LEAD_SOURCE_LABELS[lead.source];
 }
 
 export function leadAssigneeLabel(lead: Lead, admins: LeadAdminOption[]): string {

@@ -5,8 +5,8 @@ import { LeadStatusSelect } from '@/components/admin/LeadStatusSelect';
 import {
   APP_LABELS,
   formatLeadDate,
+  formatLeadSource,
   leadAssigneeLabel,
-  LEAD_SOURCE_LABELS,
   type Lead,
   type LeadAdminOption,
   type LeadStatus,
@@ -37,9 +37,13 @@ export function LeadCard({ lead, admins = [], onStatus, onAssignee, onEdit, onNo
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-medium text-ink">{lead.name}</p>
-          <a href={`mailto:${lead.email}`} className="mt-1 block break-all text-sm text-accent-soft">
-            {lead.email}
-          </a>
+          {lead.email ? (
+            <a href={`mailto:${lead.email}`} className="mt-1 block break-all text-sm text-accent-soft">
+              {lead.email}
+            </a>
+          ) : (
+            <p className="mt-1 text-sm text-ink-muted">No email</p>
+          )}
         </div>
         <p className="shrink-0 text-right text-xs text-ink-muted">
           {formatLeadDate(lead.createdAt)}
@@ -50,7 +54,7 @@ export function LeadCard({ lead, admins = [], onStatus, onAssignee, onEdit, onNo
       <p className="mt-3 text-sm text-ink-muted">
         {APP_LABELS[lead.appId]}
         <span aria-hidden="true"> · </span>
-        {LEAD_SOURCE_LABELS[lead.source]}
+        {formatLeadSource(lead)}
       </p>
       <p className="mt-2 text-sm text-ink">{lead.summary}</p>
 

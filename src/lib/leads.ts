@@ -60,10 +60,12 @@ function clipAssignee(input: { assigneeId?: string; assigneeName?: string }): Pi
 export async function createLead(input: NewLeadInput): Promise<Lead> {
   const leadId = `ld-${crypto.randomUUID()}`;
   const status = input.status ?? 'new';
+  const source = input.source ?? SOURCE_BY_APP[input.appId];
   const lead: Lead = {
     leadId,
     appId: input.appId,
-    source: input.source ?? SOURCE_BY_APP[input.appId],
+    source,
+    sourceDetail: source === 'other' ? clip(input.sourceDetail ?? '', 80) : '',
     name: clip(input.name, 80),
     email: clip(input.email, 120),
     summary: clip(input.summary, 400),
@@ -115,6 +117,7 @@ export async function updateLead(leadId: string, input: LeadUpdateInput): Promis
   await updateDoc(doc(db, 'leads', leadId), {
     appId: input.appId,
     source: input.source,
+    sourceDetail: input.source === 'other' ? clip(input.sourceDetail, 80) : '',
     name: clip(input.name, 80),
     email: clip(input.email, 120),
     summary: clip(input.summary, 400),
