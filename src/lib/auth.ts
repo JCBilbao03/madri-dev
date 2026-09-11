@@ -129,7 +129,7 @@ export function authErrorMessage(error: unknown): string {
       case 'auth/invalid-email':
         return 'That email address does not look right.';
       case 'auth/weak-password':
-        return 'Use at least six characters for the password.';
+        return 'Use at least eight characters with one letter and one number.';
       case 'auth/too-many-requests':
         return 'Too many attempts. Please wait a moment and try again.';
       case 'auth/network-request-failed':

@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthShell } from '@/components/rental/AuthShell';
 import { Button } from '@/components/ui/Button';
 import { authErrorMessage } from '@/lib/auth';
+import { validatePassword } from '@/lib/passwordPolicy';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { dashboardPath, isSignupRole, type SignupRole } from '@/types/rental';
@@ -37,8 +38,9 @@ function validate(values: SignupValues): FieldErrors {
     errors.email = 'That email address does not look right.';
   }
 
-  if (values.password.length < 6) {
-    errors.password = 'Use at least six characters.';
+  const passwordError = validatePassword(values.password);
+  if (passwordError) {
+    errors.password = passwordError;
   }
 
   if (!isSignupRole(values.role)) {

@@ -9,7 +9,7 @@ type FieldName = keyof ProjectInquiry;
 type FieldErrors = Partial<Record<FieldName, string>>;
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
-const EMPTY_FORM: ProjectInquiry = { name: '', email: '', details: '' };
+const EMPTY_FORM: ProjectInquiry = { name: '', email: '', details: '', company: '' };
 
 function validate(values: ProjectInquiry): FieldErrors {
   const errors: FieldErrors = {};
@@ -89,7 +89,20 @@ export function ContactForm({ className }: ContactFormProps) {
   const describedBy = (field: FieldName) => (errors[field] ? `${fieldId}-${field}-error` : undefined);
 
   return (
-    <form onSubmit={handleSubmit} noValidate className={cn('flex flex-col gap-5', className)}>
+    <form onSubmit={handleSubmit} noValidate className={cn('relative flex flex-col gap-5', className)}>
+      <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+        <label htmlFor={`${fieldId}-company`}>Company</label>
+        <input
+          id={`${fieldId}-company`}
+          name="company"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={values.company ?? ''}
+          onChange={handleChange}
+        />
+      </div>
+
       <div>
         <label htmlFor={`${fieldId}-name`} className="mb-2 block text-sm font-medium text-ink">
           Name

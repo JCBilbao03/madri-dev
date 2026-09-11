@@ -63,6 +63,10 @@ Brand colours, typography, and voice are documented in [BRAND.md](BRAND.md).
 - Only genuinely global UI state lives in the store. Form fields, validation errors, and
   submission status stay local to the component that owns them.
 
+## Security
+
+See [SECURITY.md](SECURITY.md) for API key restrictions, App Check setup, and rule deployment.
+
 ## Deploying to Firebase Hosting
 
 The site deploys to Firebase project `madridev-119f7`.

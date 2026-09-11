@@ -1,9 +1,14 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
+    // Property media — readable by signed-in users; writes are admin/seed only for now.
+    match /properties/{propertyId}/{fileName} {
       allow read: if request.auth != null;
       allow write: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }

@@ -172,6 +172,20 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/properties/$(propertyId)).data;
     }
 
+    function ownsProperty(propertyId) {
+      return isLandlord()
+        && exists(/databases/$(database)/documents/properties/$(propertyId))
+        && listingData(propertyId).landlordId == request.auth.uid;
+    }
+
+    function ownsApplicationProperty(data) {
+      return ownsProperty(data.propertyId);
+    }
+
+    function hasValidAppCheck() {
+      return request.app != null;
+    }
+
     function answersMatchQuestions(data) {
       return exists(/databases/$(database)/documents/properties/$(data.propertyId))
         && listingData(data.propertyId).screeningQuestions is list
@@ -369,13 +383,16 @@ service cloud.firestore {
       allow create: if false;
       allow delete: if false;
       allow update: if isLandlord()
+        && resource.data.landlordId == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['screeningQuestions'])
         && isValidQuestions(request.resource.data.screeningQuestions);
     }
 
     match /applications/{applicationId} {
       allow read: if isAuthenticated() && (
-        resource.data.tenantId == request.auth.uid || isLandlord() || isAdmin()
+        resource.data.tenantId == request.auth.uid
+        || isAdmin()
+        || ownsApplicationProperty(resource.data)
       );
 
       allow create: if isTenant()
@@ -392,7 +409,7 @@ service cloud.firestore {
           (resource.data.tenantId == request.auth.uid
             && isTenant()
             && request.resource.data.status == 'withdrawn')
-          || (isLandlord()
+          || (ownsApplicationProperty(resource.data)
             && request.resource.data.status in ['pending', 'reviewing', 'accepted', 'declined'])
         );
 
@@ -410,6 +427,11 @@ service cloud.firestore {
             && (!('notes' in request.resource.data) || request.resource.data.notes.size() == 0)
             && (!('assigneeId' in request.resource.data) || request.resource.data.assigneeId.size() == 0)
             && (!('assigneeName' in request.resource.data) || request.resource.data.assigneeName.size() == 0)
+            && (
+              (request.resource.data.source == 'contact-form' && hasValidAppCheck())
+              || (request.resource.data.source == 'cleaning-booking' && hasValidAppCheck())
+              || (request.resource.data.source == 'rental-application' && isAuthenticated())
+            )
           )
           || isAdmin()
         );
