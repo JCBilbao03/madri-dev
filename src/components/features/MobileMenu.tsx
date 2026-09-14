@@ -2,7 +2,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useRef } from 'react';
 
 import { StartProjectButton } from '@/components/features/StartProjectButton';
-import { Button } from '@/components/ui/Button';
 import { CONTACT_EMAIL, navLinks } from '@/data/navigation';
 import { useDismissableLayer } from '@/hooks/useDismissableLayer';
 import { useUIStore } from '@/store/useUIStore';
@@ -20,8 +19,9 @@ export function MobileMenu() {
   });
 
   const handleStartProject = useCallback(() => {
+    closeMobileMenu();
     openContactModal();
-  }, [openContactModal]);
+  }, [closeMobileMenu, openContactModal]);
 
   return (
     <AnimatePresence>
@@ -29,20 +29,20 @@ export function MobileMenu() {
         <motion.div
           id="mobile-menu"
           ref={panelRef}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="border-b border-line bg-base/95 backdrop-blur-xl md:hidden"
+          className="fixed inset-x-0 top-16 z-50 h-[calc(100dvh-4rem)] overflow-y-auto bg-base lg:hidden sm:top-18 sm:h-[calc(100dvh-4.5rem)]"
         >
-          <nav aria-label="Mobile" className="px-5 pt-2 pb-6 sm:px-8">
+          <nav aria-label="Mobile" className="px-5 pt-2 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-8">
             <ul className="flex flex-col">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
                     onClick={closeMobileMenu}
-                    className="block border-b border-line py-4 font-display text-lg text-ink transition hover:text-accent-soft"
+                    className="block border-b border-line py-4 font-display text-lg text-ink transition-colors duration-150 hover:text-accent-soft"
                   >
                     {link.label}
                   </a>
@@ -50,19 +50,11 @@ export function MobileMenu() {
               ))}
             </ul>
 
-            <Button size="lg" variant="secondary" to="/cleaning-app" className="mt-6 w-full" onClick={closeMobileMenu}>
-              Find cleaners
-            </Button>
-
-            <Button size="lg" variant="secondary" to="/login" className="mt-3 w-full" onClick={closeMobileMenu}>
-              Browse rentals
-            </Button>
-
-            <StartProjectButton size="lg" className="mt-3 w-full" onClick={handleStartProject} />
+            <StartProjectButton size="lg" className="mt-6 w-full" onClick={handleStartProject} />
 
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="mt-4 block text-center text-sm text-ink-muted transition hover:text-ink"
+              className="mt-4 block break-all text-center text-sm text-ink-muted transition-colors duration-150 hover:text-ink"
             >
               {CONTACT_EMAIL}
             </a>

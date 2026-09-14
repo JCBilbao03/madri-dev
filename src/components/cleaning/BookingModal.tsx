@@ -10,7 +10,7 @@ import { useBookingStore } from '@/store/useBookingStore';
 import { BOOKING_TIME_SLOTS, isCleaningService } from '@/types/cleaning';
 
 const fieldClasses =
-  'w-full rounded-xl border bg-base px-4 py-3 text-sm text-ink transition placeholder:text-ink-muted/60 focus:border-accent focus:outline-none';
+  'w-full rounded-xl border bg-base px-4 py-3 text-base text-ink transition placeholder:text-ink-muted/60 focus:border-accent focus:outline-none';
 
 export function BookingModal() {
   const isOpen = useBookingStore((state) => state.isBookingOpen);
@@ -133,7 +133,7 @@ export function BookingModal() {
   return (
     <AnimatePresence>
       {isOpen ? (
-        <div className="fixed inset-0 z-60 flex items-end justify-center p-4 sm:items-center">
+        <div className="fixed inset-0 z-60 flex items-end justify-center sm:items-center sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -154,13 +154,13 @@ export function BookingModal() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.98 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-surface p-6 shadow-2xl sm:p-8"
+            className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-xl border border-line bg-surface p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:rounded-xl sm:p-8"
           >
             <button
               type="button"
               onClick={handleClose}
               aria-label="Close booking form"
-              className="absolute top-4 right-4 grid size-9 place-items-center rounded-full text-ink-muted transition hover:bg-surface-raised hover:text-ink"
+              className="absolute top-4 right-4 grid size-11 place-items-center rounded-lg text-ink-muted transition-colors duration-150 hover:bg-surface-raised hover:text-ink"
             >
               <X className="size-4" aria-hidden="true" />
             </button>

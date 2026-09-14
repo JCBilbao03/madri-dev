@@ -10,22 +10,22 @@ export function Footer() {
       <Container className="py-12">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between">
           <div className="max-w-xs">
-            <Logo />
+            <Logo variant="full" />
             <p className="mt-4 text-sm leading-relaxed text-ink-muted">
-              A senior web application studio. We design, build, and maintain software that earns its
-              keep.
+              A senior studio building React and Next.js apps with Tailwind CSS — plus Node.js,
+              Express, and Firebase for APIs, auth, and hosting.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-10 sm:gap-16">
             <nav aria-label="Footer">
-              <h2 className="text-xs font-semibold tracking-[0.18em] text-ink uppercase">Explore</h2>
+              <h2 className="text-xs font-medium tracking-[0.16em] text-ink uppercase">Explore</h2>
               <ul className="mt-4 flex flex-col gap-2.5">
                 {[...navLinks, { label: 'Contact', href: '#contact' }].map((link) => (
                   <li key={link.href}>
                     <a
                       href={link.href}
-                      className="text-sm text-ink-muted transition hover:text-accent-soft"
+                      className="text-sm text-ink-muted transition-colors duration-150 hover:text-ink"
                     >
                       {link.label}
                     </a>
@@ -35,7 +35,7 @@ export function Footer() {
             </nav>
 
             <div>
-              <h2 className="text-xs font-semibold tracking-[0.18em] text-ink uppercase">Elsewhere</h2>
+              <h2 className="text-xs font-medium tracking-[0.16em] text-ink uppercase">Elsewhere</h2>
               <ul className="mt-4 flex flex-col gap-2.5">
                 {socialLinks.map((link) => (
                   <li key={link.href}>
@@ -43,7 +43,7 @@ export function Footer() {
                       href={link.href}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="inline-flex items-center gap-1 text-sm text-ink-muted transition hover:text-accent-soft"
+                      className="inline-flex items-center gap-1 text-sm text-ink-muted transition-colors duration-150 hover:text-ink"
                     >
                       {link.label}
                       <ArrowUpRight className="size-3.5" aria-hidden="true" />
@@ -54,7 +54,7 @@ export function Footer() {
                 <li>
                   <a
                     href={`mailto:${CONTACT_EMAIL}`}
-                    className="text-sm text-ink-muted transition hover:text-accent-soft"
+                    className="text-sm text-ink-muted transition-colors duration-150 hover:text-ink"
                   >
                     Email us
                   </a>
@@ -68,12 +68,12 @@ export function Footer() {
           <p>© {new Date().getFullYear()} MadriBuild. All rights reserved.</p>
           <ul className="flex gap-6">
             <li>
-              <a href="#top" className="transition hover:text-ink">
+              <a href="#top" className="transition-colors duration-150 hover:text-ink">
                 Privacy
               </a>
             </li>
             <li>
-              <a href="#top" className="transition hover:text-ink">
+              <a href="#top" className="transition-colors duration-150 hover:text-ink">
                 Terms
               </a>
             </li>

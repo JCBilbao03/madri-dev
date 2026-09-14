@@ -15,7 +15,7 @@ export const services: Service[] = [
     description:
       'Internal tools, customer portals, and dashboards built around how your team actually works — not around a template.',
     icon: Blocks,
-    highlights: ['React & TypeScript', 'Role-based access', 'Real-time data'],
+    highlights: ['React, Next.js & Vite', 'Tailwind CSS', 'Firestore-backed data'],
   },
   {
     id: 'saas-development',
@@ -47,14 +47,14 @@ export const services: Service[] = [
     description:
       'A component library your team can build on, with accessibility and dark mode handled once instead of per screen.',
     icon: Palette,
-    highlights: ['Token architecture', 'WCAG AA baseline', 'Documented in Storybook'],
+    highlights: ['Tailwind CSS tokens', 'WCAG AA baseline', 'Documented in Storybook'],
   },
   {
-    id: 'cloud-devops',
-    title: 'Cloud & DevOps',
+    id: 'backend-platform',
+    title: 'Backend & Platform',
     description:
-      'CI/CD, preview environments, and observability so shipping on a Friday afternoon stops being a gamble.',
+      'Node.js and Express APIs backed by Firestore, Firebase Auth, and Hosting — security rules, App Check, and deploy scripts included.',
     icon: Cloud,
-    highlights: ['Automated pipelines', 'Preview deploys', 'Error tracking'],
+    highlights: ['Node.js & Express', 'Firestore & Auth', 'Firebase Hosting'],
   },
 ];

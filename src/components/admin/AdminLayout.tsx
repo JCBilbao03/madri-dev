@@ -17,7 +17,7 @@ const links = [
 
 function navClassName({ isActive }: { isActive: boolean }): string {
   return cn(
-    'shrink-0 rounded-full px-3 py-2 text-sm font-medium transition',
+    'inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150',
     isActive ? 'bg-surface text-ink' : 'text-ink-muted hover:bg-surface hover:text-ink',
   );
 }

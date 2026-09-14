@@ -4,19 +4,19 @@
 
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Sora', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
-  --color-base: #0a0a0b;
-  --color-surface: #141418;
-  --color-surface-raised: #1c1c22;
-  --color-line: #26262c;
+  --color-base: #1a1c22;
+  --color-surface: #22252d;
+  --color-surface-raised: #2a2e38;
+  --color-line: #353942;
 
   --color-ink: #f4f4f5;
-  --color-ink-muted: #a1a1aa;
+  --color-ink-muted: #9ca3af;
 
-  --color-accent: #5b8cff;
-  --color-accent-soft: #8aabff;
-  --color-accent-alt: #22d3ee;
+  --color-accent: #fdb813;
+  --color-accent-soft: #ffc94a;
+  --color-accent-alt: #e8960c;
 
   --color-danger: #fb7185;
 
@@ -34,16 +34,16 @@
     color-scheme: light;
 
     --color-base: #ffffff;
-    --color-surface: #f7f7f9;
-    --color-surface-raised: #eeeef2;
+    --color-surface: #f5f5f7;
+    --color-surface-raised: #ececf0;
     --color-line: #e2e2e8;
 
-    --color-ink: #17171a;
-    --color-ink-muted: #55555f;
+    --color-ink: #1a1c22;
+    --color-ink-muted: #5c6070;
 
-    --color-accent: #2f5fe0;
-    --color-accent-soft: #1e40af;
-    --color-accent-alt: #0e7490;
+    --color-accent: #fdb813;
+    --color-accent-soft: #c77700;
+    --color-accent-alt: #e8960c;
 
     --color-danger: #c62230;
   }
@@ -60,64 +60,34 @@
 
   /* Consistent, high-contrast focus ring across every interactive element. */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-accent-soft;
+    @apply outline-2 outline-offset-2 outline-accent;
   }
 
   ::selection {
-    @apply bg-accent/30 text-ink;
+    @apply bg-accent/35 text-ink;
   }
 }
 
-@layer utilities {
-  .text-gradient {
-    @apply bg-gradient-to-r from-accent-soft via-accent to-accent-alt bg-clip-text text-transparent;
+@layer components {
+  /* Beats the base `img { height: auto }` rule so the header mark never renders oversized. */
+  .logo-mark {
+    display: block;
+    height: 24px;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
   }
 
-  .btn-cta-shine {
-    @apply relative overflow-hidden text-white;
-    background-image: linear-gradient(
-      to right,
-      color-mix(in srgb, var(--color-accent) 88%, #0a0a0b),
-      var(--color-accent),
-      color-mix(in srgb, var(--color-accent-alt) 55%, var(--color-accent))
-    );
-    text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
-  }
-
-  :root.light .btn-cta-shine {
-    background-image: linear-gradient(
-      to right,
-      var(--color-accent-soft),
-      var(--color-accent),
-      color-mix(in srgb, var(--color-accent-alt) 80%, #0a0a0b)
-    );
-  }
-
-  .btn-cta-shine::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      105deg,
-      transparent 35%,
-      rgba(255, 255, 255, 0.18) 50%,
-      transparent 65%
-    );
-    transform: translateX(-120%);
-    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-    pointer-events: none;
-  }
-
-  .btn-cta-shine:hover::before {
-    transform: translateX(120%);
+  .logo-mark-full {
+    display: block;
+    height: 48px;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn-cta-shine::before {
-    display: none;
-  }
-
   html {
     scroll-behavior: auto;
   }

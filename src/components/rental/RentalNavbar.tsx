@@ -41,7 +41,7 @@ function linksForRole(role: UserRole | null): { to: string; label: string }[] {
 
 function navClassName({ isActive }: { isActive: boolean }): string {
   return cn(
-    'shrink-0 rounded-full px-3 py-2 text-sm font-medium transition',
+    'inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150',
     isActive ? 'bg-surface text-ink' : 'text-ink-muted hover:bg-surface hover:text-ink',
   );
 }
@@ -56,11 +56,19 @@ export function RentalNavbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-base/80 backdrop-blur-xl">
-      <Container className="flex h-18 items-center justify-between gap-3">
-        <Logo to="/" />
+      <Container className="flex flex-col gap-2 py-3 sm:h-18 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:py-0">
+        <div className="flex items-center justify-between gap-3">
+          <Logo to="/" />
+          <div className="flex items-center gap-1 sm:hidden">
+            <ThemeToggle />
+            <Button size="sm" variant="secondary" onClick={handleSignOut}>
+              Sign out
+            </Button>
+          </div>
+        </div>
 
-        <nav aria-label="Rental app" className="flex min-w-0 flex-1 items-center justify-end gap-1">
-          <div className="flex min-w-0 flex-1 items-center justify-end gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav aria-label="Rental app" className="flex min-w-0 flex-1 items-center sm:justify-end sm:gap-1">
+          <div className="-mx-5 flex min-w-0 flex-1 gap-1 overflow-x-auto px-5 [scrollbar-width:none] sm:mx-0 sm:justify-end sm:px-0 [&::-webkit-scrollbar]:hidden">
             {links.map((link) => (
               <NavLink key={link.to} to={link.to} end className={navClassName}>
                 {link.label}
@@ -68,10 +76,12 @@ export function RentalNavbar() {
             ))}
           </div>
 
-          <ThemeToggle />
-          <Button size="sm" variant="secondary" onClick={handleSignOut}>
-            Sign out
-          </Button>
+          <div className="hidden sm:flex sm:items-center sm:gap-1">
+            <ThemeToggle />
+            <Button size="sm" variant="secondary" onClick={handleSignOut}>
+              Sign out
+            </Button>
+          </div>
         </nav>
       </Container>
     </header>

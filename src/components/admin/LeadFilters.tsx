@@ -19,7 +19,7 @@ interface LeadFiltersProps {
 }
 
 const selectClasses =
-  'w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink focus:border-accent focus:outline-none sm:py-2.5';
+  'w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink focus:border-accent focus:outline-none sm:py-2.5';
 
 export function LeadFilters({
   appId,
@@ -79,7 +79,7 @@ export function LeadFilters({
           value={query}
           onChange={handleQueryChange}
           placeholder="Search name, email, or summary"
-          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none sm:py-2.5"
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none sm:py-2.5"
         />
       </label>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

@@ -20,8 +20,8 @@ export function AuthShell({ title, description, children }: AuthShellProps) {
         </Container>
       </header>
 
-      <main className="flex flex-1 items-center justify-center px-5 py-16">
-        <div className="w-full max-w-md rounded-2xl border border-line bg-surface p-8">
+      <main className="flex flex-1 items-center justify-center px-5 py-10 sm:py-16">
+        <div className="w-full max-w-md rounded-xl border border-line bg-surface p-5 sm:p-8">
           <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">{title}</h1>
           <p className="mt-2 text-sm text-ink-muted">{description}</p>
           <div className="mt-8">{children}</div>

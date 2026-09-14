@@ -30,7 +30,7 @@ export const workflowSteps: WorkflowStep[] = [
     title: 'Development',
     duration: 'Weeks 4–9',
     description:
-      'Two-week sprints with a working deploy at the end of each one. You see progress continuously, not in one big reveal.',
+      'Two-week sprints in React, Next.js, or Vite with Tailwind — Express APIs and Firestore wired up with a working deploy at the end of each one.',
     icon: TerminalSquare,
   },
   {

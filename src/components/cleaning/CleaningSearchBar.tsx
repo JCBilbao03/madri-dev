@@ -30,7 +30,7 @@ function ServiceChip({ label, value, isActive, onSelect }: ServiceChipProps) {
       onClick={handleClick}
       aria-pressed={isActive}
       className={cn(
-        'rounded-full border px-3 py-1.5 text-sm font-medium transition',
+        'rounded-full border px-4 py-2.5 text-sm font-medium transition-colors duration-150 min-h-11',
         isActive
           ? 'border-accent/50 bg-accent/15 text-accent-soft'
           : 'border-line bg-surface text-ink-muted hover:border-accent/40 hover:text-ink',
@@ -76,7 +76,7 @@ export function CleaningSearchBar({
             value={query}
             onChange={handleQueryChange}
             placeholder="Austin, Brooklyn, deep clean…"
-            className="w-full rounded-xl border border-line bg-surface py-3 pr-4 pl-10 text-sm text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none"
+            className="w-full rounded-xl border border-line bg-surface py-3 pr-4 pl-10 text-base text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none"
           />
         </div>
       </form>

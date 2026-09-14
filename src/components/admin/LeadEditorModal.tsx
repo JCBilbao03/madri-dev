@@ -23,7 +23,7 @@ import {
 } from '@/types/admin';
 
 const fieldClasses =
-  'w-full rounded-xl border border-line bg-base px-4 py-3 text-sm text-ink transition placeholder:text-ink-muted/60 focus:border-accent focus:outline-none';
+  'w-full rounded-xl border border-line bg-base px-4 py-3 text-base text-ink transition placeholder:text-ink-muted/60 focus:border-accent focus:outline-none';
 
 interface LeadFormValues {
   name: string;

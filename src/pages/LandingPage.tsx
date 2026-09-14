@@ -5,6 +5,8 @@ import { Founders } from '@/components/features/Founders';
 import { Header } from '@/components/features/Header';
 import { Hero } from '@/components/features/Hero';
 import { Services } from '@/components/features/Services';
+import { TechStack } from '@/components/features/TechStack';
+import { Works } from '@/components/features/Works';
 import { Workflow } from '@/components/features/Workflow';
 
 export function LandingPage() {
@@ -12,7 +14,7 @@ export function LandingPage() {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-70 focus:rounded-full focus:bg-accent focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-base"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-70 focus:rounded-lg focus:bg-accent focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-base"
       >
         Skip to content
       </a>
@@ -22,6 +24,8 @@ export function LandingPage() {
       <main id="main">
         <Hero />
         <Services />
+        <Works />
+        <TechStack />
         <Workflow />
         <Founders />
         <Contact />

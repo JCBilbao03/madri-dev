@@ -96,7 +96,7 @@ export function LeadNotesModal({ lead, onClose, onAddNote }: LeadNotesModalProps
           maxLength={MAX_NOTE_TEXT}
           disabled={atLimit}
           placeholder={atLimit ? 'This lead already has the maximum number of notes.' : 'What did you hear back?'}
-          className="w-full rounded-xl border border-line bg-base px-4 py-3 text-sm text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none disabled:opacity-60"
+          className="w-full rounded-xl border border-line bg-base px-4 py-3 text-base text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none disabled:opacity-60"
         />
         {error ? <p className="mt-1.5 text-sm text-danger">{error}</p> : null}
         <div className="mt-3 flex justify-end">

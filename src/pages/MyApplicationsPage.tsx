@@ -102,7 +102,7 @@ export function MyApplicationsPage() {
   );
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-28 pb-16">
+    <main id="main" className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
       <Container>
         <p className="text-sm font-medium text-accent-soft">Applications</p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink">Your applications</h1>

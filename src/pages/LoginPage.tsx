@@ -20,7 +20,7 @@ type FieldErrors = Partial<Record<FieldName, string>>;
 const EMPTY: LoginValues = { email: '', password: '' };
 
 const fieldClasses =
-  'w-full rounded-xl border bg-base px-4 py-3 text-sm text-ink transition placeholder:text-ink-muted/60 focus:border-accent focus:outline-none';
+  'w-full rounded-xl border bg-base px-4 py-3 text-base text-ink transition placeholder:text-ink-muted/60 focus:border-accent focus:outline-none';
 
 function validate(values: LoginValues): FieldErrors {
   const errors: FieldErrors = {};

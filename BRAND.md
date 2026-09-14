@@ -9,15 +9,15 @@ block of [src/index.css](src/index.css) and consumed as Tailwind utilities
 
 | Token             | Value     | Tailwind utility     | Use                                        |
 | ----------------- | --------- | -------------------- | ------------------------------------------ |
-| `base`            | `#0A0A0B` | `bg-base`            | Page background                            |
-| `surface`         | `#141418` | `bg-surface`         | Cards, panels, form fields                 |
-| `surface-raised`  | `#1C1C22` | `bg-surface-raised`  | Hover state on cards, timeline nodes       |
-| `line`            | `#26262C` | `border-line`        | Hairline borders and dividers              |
+| `base`            | `#1A1C22` | `bg-base`            | Page background (brand charcoal)           |
+| `surface`         | `#22252D` | `bg-surface`         | Cards, panels, form fields                 |
+| `surface-raised`  | `#2A2E38` | `bg-surface-raised`  | Hover state on cards, timeline nodes       |
+| `line`            | `#353942` | `border-line`        | Hairline borders and dividers              |
 | `ink`             | `#F4F4F5` | `text-ink`           | Headings and primary body copy             |
-| `ink-muted`       | `#A1A1AA` | `text-ink-muted`     | Secondary copy, labels, footer             |
-| `accent`          | `#5B8CFF` | `bg-accent`          | Primary CTA, links, active states          |
-| `accent-soft`     | `#8AABFF` | `text-accent-soft`   | Focus rings, gradient start                |
-| `accent-alt`      | `#22D3EE` | `to-accent-alt`      | Gradient end, small highlights             |
+| `ink-muted`       | `#9CA3AF` | `text-ink-muted`     | Secondary copy, labels, footer             |
+| `accent`          | `#FDB813` | `bg-accent`          | Primary CTA, links, active states          |
+| `accent-soft`     | `#FFC94A` | `text-accent-soft`   | Emphasis text on dark backgrounds          |
+| `accent-alt`      | `#E8960C` | `to-accent-alt`      | Secondary highlights, success-adjacent     |
 
 ### Contrast
 
@@ -25,19 +25,25 @@ All pairings meet WCAG AA for their size class:
 
 - `ink` on `base` — 18.3:1
 - `ink-muted` on `base` — 9.1:1
-- `base` on `accent` — 8.0:1 (used for the primary button, dark text on blue)
-- `accent-soft` on `base` — 8.6:1
+- `base` (charcoal) on `accent` (orange) — 10.5:1 (primary button label)
+- `accent-soft` on `base` — 9.2:1
 
-Never place `accent` text directly on `base` at body size; use `accent-soft` instead.
+On light backgrounds, use `accent-soft` (`#C77700`) for accent text at body size.
+
+## Logo
+
+- Lockup: `{✓}B` mark + `madri_build` wordmark (orange underscore) + tagline.
+- Source files: [`public/brand/madribuild-logo.png`](public/brand/madribuild-logo.png) (full lockup),
+  [`public/brand/madribuild-mark.png`](public/brand/madribuild-mark.png) (MB icon for the header).
+- Both use a transparent background; rendered by [`Logo.tsx`](src/components/ui/Logo.tsx).
 
 ## Typography
 
-- **Display / headings:** Sora, weights 500–700, tight tracking (`tracking-tight`)
+- **Display / brand:** JetBrains Mono, weights 500–700, tight tracking (`tracking-tight`)
 - **Body / UI:** Inter, weights 400–600
 - Both are loaded from Google Fonts in [index.html](index.html) with `display=swap`.
 - Heading scale is fluid: mobile `text-3xl` → desktop `text-5xl`/`text-6xl`.
-- The `.text-gradient` utility applies the accent gradient to a heading fragment. Use it
-  on at most one phrase per section so it stays an emphasis device.
+- Accent emphasis uses solid `text-accent` on at most one phrase per section.
 
 ## Motion
 

@@ -34,7 +34,7 @@ function AreaChip({ id, label, isActive, onSelect }: AreaChipProps) {
       onClick={handleClick}
       aria-pressed={isActive}
       className={cn(
-        'rounded-full border px-3 py-1.5 text-sm font-medium transition',
+        'min-h-11 rounded-full border px-4 py-2.5 text-sm font-medium transition-colors duration-150',
         isActive
           ? 'border-accent/50 bg-accent/15 text-accent-soft'
           : 'border-line bg-surface text-ink-muted hover:border-accent/40 hover:text-ink',
@@ -97,7 +97,7 @@ export function ListingFilters({
               value={search}
               onChange={handleSearchChange}
               placeholder="Austin, Brooklyn, townhouse…"
-              className="w-full rounded-xl border border-line bg-surface py-3 pr-4 pl-10 text-sm text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none"
+              className="w-full rounded-xl border border-line bg-surface py-3 pr-4 pl-10 text-base text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none"
             />
           </div>
         </div>
@@ -114,7 +114,7 @@ export function ListingFilters({
             value={maxPrice}
             onChange={handleMaxPriceChange}
             placeholder="Any"
-            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none"
+            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted/60 focus:border-accent focus:outline-none"
           />
         </div>
 
@@ -126,7 +126,7 @@ export function ListingFilters({
             id="listing-sort"
             value={sort}
             onChange={handleSortChange}
-            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink focus:border-accent focus:outline-none"
+            className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-base text-ink focus:border-accent focus:outline-none"
           >
             <option value="featured">Featured</option>
             <option value="price-asc">Price: low to high</option>

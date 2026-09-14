@@ -13,7 +13,7 @@ const links = [
 
 function navClassName({ isActive }: { isActive: boolean }): string {
   return cn(
-    'shrink-0 rounded-full px-3 py-2 text-sm font-medium transition',
+    'inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150',
     isActive ? 'bg-surface text-ink' : 'text-ink-muted hover:bg-surface hover:text-ink',
   );
 }
@@ -21,7 +21,7 @@ function navClassName({ isActive }: { isActive: boolean }): string {
 export function CleaningNavbar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-base/80 backdrop-blur-xl">
-      <Container className="flex h-18 items-center justify-between gap-3">
+      <Container className="flex h-16 items-center justify-between gap-3 sm:h-18">
         <Logo to="/" />
 
         <nav aria-label="Cleaning app" className="flex min-w-0 flex-1 items-center justify-end gap-1">

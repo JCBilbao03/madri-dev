@@ -27,7 +27,7 @@ interface QuestionRowProps {
 }
 
 const fieldClasses =
-  'w-full rounded-xl border border-line bg-base px-4 py-3 text-sm text-ink focus:border-accent focus:outline-none';
+  'w-full rounded-xl border border-line bg-base px-4 py-3 text-base text-ink focus:border-accent focus:outline-none';
 
 function QuestionRow({ question, index, canRemove, disabled, onChange, onRemove }: QuestionRowProps) {
   const handlePromptChange = useCallback(

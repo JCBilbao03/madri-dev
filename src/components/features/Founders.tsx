@@ -1,17 +1,9 @@
+import { FounderPortrait } from '@/components/features/FounderPortrait';
+import { StartProjectButton } from '@/components/features/StartProjectButton';
 import { Reveal } from '@/components/shared/Reveal';
 import { Container } from '@/components/ui/Container';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { founders } from '@/data/founders';
-import { cn } from '@/lib/utils';
-
-function founderInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 export function Founders() {
   return (
@@ -19,55 +11,34 @@ export function Founders() {
       <Container>
         <Reveal>
           <SectionHeader
-            eyebrow="Founders"
-            title="The people you"
-            titleAccent="actually work with"
+            eyebrow="Team"
+            title="Direct access to the"
+            titleAccent="founders"
             headingId="founders-heading"
-            description="No account managers and no handoffs to a junior team after the contract is signed. You work directly with the four of us."
+            description="No account managers, no middle-men, and no handoffs to a junior team after signing. You collaborate directly with the senior partners building your product."
+            className="max-w-2xl"
           />
         </Reveal>
 
-        <ul className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mx-auto mt-14 grid max-w-xl grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-16 sm:gap-y-16">
           {founders.map((founder, index) => (
-            <Reveal as="li" key={founder.id} delay={index * 0.08}>
-              <article className="group h-full overflow-hidden rounded-2xl border border-line bg-surface transition duration-300 hover:border-accent/50">
-                <div className="relative aspect-[4/5] overflow-hidden">
-                  {founder.photo ? (
-                    <img
-                      src={founder.photo}
-                      alt={founder.photoAlt}
-                      loading="lazy"
-                      decoding="async"
-                      style={{ objectPosition: founder.photoPosition ?? 'top' }}
-                      className="size-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                    />
-                  ) : (
-                    <div
-                      aria-hidden="true"
-                      className={cn(
-                        'flex size-full items-center justify-center bg-gradient-to-br from-accent/20 via-surface-raised to-accent-alt/15',
-                      )}
-                    >
-                      <span className="font-display text-5xl font-bold tracking-tight text-gradient">
-                        {founderInitials(founder.name)}
-                      </span>
-                    </div>
-                  )}
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-surface to-transparent"
-                  />
-                </div>
-
-                <div className="p-6">
-                  <h3 className="font-display text-xl font-semibold text-ink">{founder.name}</h3>
-                  <p className="mt-1 text-sm font-medium text-accent-soft">{founder.role}</p>
-                  <p className="mt-3.5 text-sm leading-relaxed text-ink-muted">{founder.bio}</p>
-                </div>
-              </article>
+            <Reveal as="li" key={founder.id} delay={index * 0.06}>
+              <FounderPortrait founder={founder} />
             </Reveal>
           ))}
         </ul>
+
+        <Reveal delay={0.16}>
+          <div className="mt-20 flex flex-col items-center text-center sm:mt-24">
+            <h3 className="font-display text-2xl font-medium tracking-tight text-balance text-ink sm:text-3xl">
+              Let&apos;s assemble your team
+            </h3>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-pretty text-ink-muted">
+              Start with a direct discovery call with us to map your scope, architecture, and timeline.
+            </p>
+            <StartProjectButton size="lg" className="mt-8 w-full sm:w-auto" />
+          </div>
+        </Reveal>
       </Container>
     </section>
   );

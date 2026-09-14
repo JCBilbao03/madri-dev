@@ -48,7 +48,7 @@ export function AccountPage() {
   );
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-28 pb-16">
+    <main id="main" className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
       <Container className="max-w-xl">
         <p className="text-sm font-medium text-accent-soft">Account</p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink">Your profile</h1>
@@ -64,7 +64,7 @@ export function AccountPage() {
               type="email"
               value={user?.email ?? ''}
               readOnly
-              className="w-full rounded-xl border border-line bg-base px-4 py-3 text-sm text-ink-muted"
+              className="w-full rounded-xl border border-line bg-base px-4 py-3 text-base text-ink-muted"
             />
           </div>
 
@@ -80,7 +80,7 @@ export function AccountPage() {
               onChange={handleChange}
               aria-invalid={Boolean(error)}
               className={cn(
-                'w-full rounded-xl border bg-base px-4 py-3 text-sm text-ink focus:border-accent focus:outline-none',
+                'w-full rounded-xl border bg-base px-4 py-3 text-base text-ink focus:border-accent focus:outline-none',
                 error ? 'border-danger' : 'border-line',
               )}
             />

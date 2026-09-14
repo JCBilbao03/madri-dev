@@ -5,15 +5,15 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition duration-200 ease-out disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-normal sm:whitespace-nowrap transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        primary:
-          'bg-accent text-base shadow-[0_0_0_1px_rgba(91,140,255,0.4),0_10px_30px_-12px_rgba(91,140,255,0.8)] hover:bg-accent-soft',
-        cta: 'btn-cta-shine font-semibold shadow-[0_0_0_1px_rgba(139,171,255,0.45),0_8px_28px_-10px_rgba(91,140,255,0.85)] hover:brightness-110 hover:shadow-[0_0_0_1px_rgba(139,171,255,0.55),0_12px_36px_-8px_rgba(91,140,255,0.95)] active:scale-[0.98]',
-        secondary: 'border border-line bg-surface text-ink hover:border-accent/60 hover:bg-surface-raised',
-        ghost: 'text-ink-muted hover:bg-surface hover:text-ink',
+        primary: 'border border-accent bg-accent text-base hover:bg-accent-soft active:bg-accent/95',
+        cta: 'border border-accent bg-accent text-base hover:bg-accent-soft active:bg-accent/95',
+        secondary:
+          'border border-line bg-surface text-ink hover:border-ink-muted/30 hover:bg-surface-raised active:bg-surface',
+        ghost: 'text-ink-muted hover:bg-surface hover:text-ink active:bg-surface-raised',
       },
       size: {
         sm: 'h-9 px-4 text-sm',

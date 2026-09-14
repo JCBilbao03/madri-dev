@@ -42,7 +42,7 @@ export function Contact() {
 
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="mt-8 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2.5 text-sm text-ink transition hover:border-accent/60"
+              className="mt-8 inline-flex min-h-11 max-w-full items-center gap-2 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm break-all text-ink transition-colors duration-150 hover:border-ink-muted/30 hover:bg-surface-raised"
             >
               <Mail className="size-4 text-accent-soft" aria-hidden="true" />
               {CONTACT_EMAIL}
@@ -50,7 +50,7 @@ export function Contact() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <div className="rounded-2xl border border-line bg-surface p-6 sm:p-8">
+            <div className="rounded-xl border border-line bg-surface p-6 sm:p-8">
               <ContactForm />
             </div>
           </Reveal>

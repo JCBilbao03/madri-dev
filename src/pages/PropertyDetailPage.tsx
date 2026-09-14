@@ -100,7 +100,7 @@ export function PropertyDetailPage() {
 
   if (!property) {
     return (
-      <main className="min-h-svh bg-base pt-28 pb-16">
+      <main className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
         <Container>
           <h1 className="font-display text-2xl font-semibold text-ink">Listing not found</h1>
           <Button className="mt-6" variant="secondary" to={role ? dashboardPath(role) : '/login'}>
@@ -115,7 +115,7 @@ export function PropertyDetailPage() {
   const questions = property.screeningQuestions;
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-28 pb-16">
+    <main id="main" className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
       <Container className="max-w-3xl">
         <Link to={backTo} className="inline-flex items-center gap-2 text-sm text-ink-muted hover:text-ink">
           <ArrowLeft className="size-4" aria-hidden="true" />
