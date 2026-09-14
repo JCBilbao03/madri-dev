@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
 import { ThemeToggle } from '@/components/features/ThemeToggle';
+import { usePageMeta } from '@/hooks/usePageMeta';
+import { BRAND_NAME } from '@/lib/site';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Logo } from '@/components/ui/Logo';
@@ -63,6 +65,12 @@ export function AdminNavbar() {
 }
 
 export function AdminLayout() {
+  usePageMeta({
+    title: `Admin — ${BRAND_NAME}`,
+    description: `${BRAND_NAME} admin dashboard.`,
+    robots: 'noindex, nofollow',
+  });
+
   return (
     <>
       <AdminNavbar />

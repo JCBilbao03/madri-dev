@@ -4,7 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { AuthShell } from '@/components/rental/AuthShell';
 import { Button } from '@/components/ui/Button';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { authErrorMessage } from '@/lib/auth';
+import { BRAND_NAME } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { dashboardPath } from '@/types/rental';
@@ -37,6 +39,12 @@ function validate(values: LoginValues): FieldErrors {
 }
 
 export function LoginPage() {
+  usePageMeta({
+    title: `Sign in — ${BRAND_NAME}`,
+    description: `Sign in to the ${BRAND_NAME} rental marketplace.`,
+    robots: 'noindex, nofollow',
+  });
+
   const fieldId = useId();
   const navigate = useNavigate();
   const signIn = useAuthStore((state) => state.signIn);

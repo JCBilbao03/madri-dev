@@ -4,7 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { AuthShell } from '@/components/rental/AuthShell';
 import { Button } from '@/components/ui/Button';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { authErrorMessage } from '@/lib/auth';
+import { BRAND_NAME } from '@/lib/site';
 import { validatePassword } from '@/lib/passwordPolicy';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -51,6 +53,12 @@ function validate(values: SignupValues): FieldErrors {
 }
 
 export function SignupPage() {
+  usePageMeta({
+    title: `Create account — ${BRAND_NAME}`,
+    description: `Create a ${BRAND_NAME} account as a tenant or landlord.`,
+    robots: 'noindex, nofollow',
+  });
+
   const fieldId = useId();
   const navigate = useNavigate();
   const signUp = useAuthStore((state) => state.signUp);

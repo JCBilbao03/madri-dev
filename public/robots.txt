@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /signup
+Disallow: /account
+Disallow: /cleaning-app
+Disallow: /feed
+Disallow: /landlord
+Disallow: /property
+Disallow: /applications
+Disallow: /saved
+
+Sitemap: https://madribuild.com/sitemap.xml

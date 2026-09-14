@@ -4,6 +4,8 @@ import { BookingModal } from '@/components/cleaning/BookingModal';
 import { ThemeToggle } from '@/components/features/ThemeToggle';
 import { Container } from '@/components/ui/Container';
 import { Logo } from '@/components/ui/Logo';
+import { usePageMeta } from '@/hooks/usePageMeta';
+import { BRAND_NAME } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 const links = [
@@ -41,6 +43,12 @@ export function CleaningNavbar() {
 }
 
 export function CleaningLayout() {
+  usePageMeta({
+    title: `Cleaning app — ${BRAND_NAME}`,
+    description: `${BRAND_NAME} cleaning services demo.`,
+    robots: 'noindex, nofollow',
+  });
+
   return (
     <>
       <CleaningNavbar />

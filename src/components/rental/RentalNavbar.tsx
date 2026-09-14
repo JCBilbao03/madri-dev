@@ -6,6 +6,8 @@ import { AuthLoading } from '@/components/rental/AuthLoading';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Logo } from '@/components/ui/Logo';
+import { usePageMeta } from '@/hooks/usePageMeta';
+import { BRAND_NAME } from '@/lib/site';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import type { UserRole } from '@/types/rental';
@@ -89,6 +91,12 @@ export function RentalNavbar() {
 }
 
 export function RentalLayout() {
+  usePageMeta({
+    title: `Rental app — ${BRAND_NAME}`,
+    description: `${BRAND_NAME} rental marketplace.`,
+    robots: 'noindex, nofollow',
+  });
+
   const user = useAuthStore((state) => state.user);
   const isLoading = useAuthStore((state) => state.isLoading);
 

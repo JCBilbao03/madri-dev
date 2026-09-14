@@ -31,7 +31,7 @@ export function Hero() {
           className="mx-auto max-w-3xl text-center"
         >
           <p className="inline-flex items-center rounded-md border border-line bg-surface px-3 py-1 text-xs font-medium tracking-wide text-ink-muted uppercase">
-            Booking new projects for Q4
+            MadriBuild — booking new projects for Q4
           </p>
 
           <h1 className="mt-6 font-display text-3xl leading-[1.12] font-semibold tracking-tight text-balance text-ink sm:text-5xl lg:text-6xl">
@@ -39,9 +39,9 @@ export function Hero() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-pretty text-ink-muted">
-            We are a small senior team shipping React, Next.js, and Vite frontends styled with
-            modern CSS frameworks like Tailwind — backed by Node.js, Express, and Firebase. Fixed
-            scope, honest timelines, and code your team can maintain after we hand it over.
+            MadriBuild is a small senior studio shipping React, Next.js, and Vite frontends styled
+            with modern CSS frameworks like Tailwind — backed by Node.js, Express, and Firebase.
+            Fixed scope, honest timelines, and code your team can maintain after we hand it over.
           </p>
 
           <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
