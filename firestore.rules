@@ -30,10 +30,18 @@ service cloud.firestore {
     //   - answers: list of maps { questionId, prompt, answer } required on create
     //     and aligned with that property's screeningQuestions
     //
+    // Collection: inventoryItems
+    // Document ID: itemId (inv-{uuid})
+    // Fields:
+    //   - id, name, sku, stock, weightKg, barcodeValue, photoUrl (Firebase Storage URL), createdAt, updatedAt
+    //   - dimensions: map { lengthCm, widthCm, heightCm }
+    //   - cartonDimensions: map { lengthCm, widthCm, heightCm }
+    //   - cartonWeightKg: number
+    //
     // Collection: leads
     // Document ID: leadId (ld-{uuid})
     // Fields:
-    //   - leadId, appId (marketing|rental|cleaning), source, name, email, summary
+    //   - leadId, appId (marketing|rental|cleaning|inventory), source, name, email, summary
     //   - status: new|contacted|qualified|closed
     //   - createdAt: ISO string
     //   - metadata: optional map of small string fields
@@ -263,15 +271,66 @@ service cloud.firestore {
 
     function isValidLeadMetadata(data) {
       return data.metadata is map
-        && data.metadata.keys().hasOnly(['propertyId', 'applicationId', 'tenantId', 'bookingId', 'cleanerId', 'serviceType', 'address'])
-        && data.metadata.size() <= 8
+        && data.metadata.keys().hasOnly(['propertyId', 'applicationId', 'tenantId', 'bookingId', 'cleanerId', 'serviceType', 'address', 'itemCount', 'skus'])
+        && data.metadata.size() <= 10
         && isOptionalLeadString(data.metadata, 'propertyId', 80)
         && isOptionalLeadString(data.metadata, 'applicationId', 120)
         && isOptionalLeadString(data.metadata, 'tenantId', 128)
         && isOptionalLeadString(data.metadata, 'bookingId', 80)
         && isOptionalLeadString(data.metadata, 'cleanerId', 80)
         && isOptionalLeadString(data.metadata, 'serviceType', 80)
-        && isOptionalLeadString(data.metadata, 'address', 120);
+        && isOptionalLeadString(data.metadata, 'address', 120)
+        && isOptionalLeadString(data.metadata, 'itemCount', 8)
+        && isOptionalLeadString(data.metadata, 'skus', 200);
+    }
+
+    function isValidInventoryDimensions(value) {
+      return value is map
+        && value.keys().hasOnly(['lengthCm', 'widthCm', 'heightCm'])
+        && value.lengthCm is number
+        && value.lengthCm >= 0
+        && value.lengthCm <= 100000
+        && value.widthCm is number
+        && value.widthCm >= 0
+        && value.widthCm <= 100000
+        && value.heightCm is number
+        && value.heightCm >= 0
+        && value.heightCm <= 100000;
+    }
+
+    function isValidInventoryItem(data) {
+      return hasOnlyAllowedFields(['id', 'name', 'sku', 'stock', 'weightKg', 'dimensions', 'cartonWeightKg', 'cartonDimensions', 'photoUrl', 'barcodeValue', 'createdAt', 'updatedAt'])
+        && data.id is string
+        && data.id.size() >= 8
+        && data.id.size() <= 40
+        && data.name is string
+        && data.name.size() >= 1
+        && data.name.size() <= 120
+        && data.sku is string
+        && data.sku.size() >= 1
+        && data.sku.size() <= 40
+        && data.stock is number
+        && data.stock >= 0
+        && data.stock <= 1000000
+        && data.weightKg is number
+        && data.weightKg >= 0
+        && data.weightKg <= 100000
+        && isValidInventoryDimensions(data.dimensions)
+        && data.cartonWeightKg is number
+        && data.cartonWeightKg >= 0
+        && data.cartonWeightKg <= 100000
+        && isValidInventoryDimensions(data.cartonDimensions)
+        && data.photoUrl is string
+        && data.photoUrl.size() <= 4096
+        && data.barcodeValue is string
+        && data.barcodeValue.size() >= 1
+        && data.barcodeValue.size() <= 40
+        && data.createdAt is string
+        && data.createdAt.size() >= 20
+        && data.createdAt.size() <= 40
+        && data.updatedAt is string
+        && data.updatedAt.size() >= 20
+        && data.updatedAt.size() <= 40;
     }
 
     function isValidLeadNote(item) {
@@ -345,6 +404,7 @@ service cloud.firestore {
           'contact-form',
           'rental-application',
           'cleaning-booking',
+          'inventory-export',
           'facebook',
           'instagram',
           'linkedin',
@@ -363,11 +423,11 @@ service cloud.firestore {
     }
 
     function isValidLeadShape(data) {
-      return hasOnlyAllowedFields(['leadId', 'appId', 'source', 'sourceDetail', 'name', 'email', 'summary', 'status', 'createdAt', 'metadata', 'notes', 'assigneeId', 'assigneeName']) &&
+      return hasOnlyAllowedFields(['leadId', 'appId', 'source', 'sourceDetail', 'name', 'email', 'summary', 'status', 'createdAt', 'followUpAt', 'metadata', 'notes', 'assigneeId', 'assigneeName']) &&
         data.leadId is string &&
         data.leadId.size() >= 8 &&
         data.leadId.size() <= 80 &&
-        data.appId in ['marketing', 'rental', 'cleaning'] &&
+        data.appId in ['marketing', 'rental', 'cleaning', 'inventory'] &&
         isValidLeadSource(data) &&
         data.name is string &&
         data.name.size() >= 1 &&
@@ -380,6 +440,7 @@ service cloud.firestore {
         data.createdAt is string &&
         data.createdAt.size() >= 20 &&
         data.createdAt.size() <= 40 &&
+        (!('followUpAt' in data) || (data.followUpAt is string && data.followUpAt.size() <= 10)) &&
         isValidLeadMetadata(data) &&
         (!('notes' in data) || isValidLeadNotes(data.notes)) &&
         isValidLeadAssignee(data);
@@ -401,7 +462,7 @@ service cloud.firestore {
     }
 
     match /properties/{propertyId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow create: if false;
       allow delete: if false;
       allow update: if isLandlord()
@@ -438,6 +499,20 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Public demo catalog — no login or App Check; shape validation limits abuse.
+    match /inventoryItems/{itemId} {
+      allow read: if true;
+
+      allow create: if isValidInventoryItem(request.resource.data)
+        && request.resource.data.id == itemId;
+
+      allow update: if isValidInventoryItem(request.resource.data)
+        && request.resource.data.id == itemId
+        && areImmutableFieldsUnchanged(['id', 'createdAt']);
+
+      allow delete: if true;
+    }
+
     match /leads/{leadId} {
       allow read: if isAdmin();
 
@@ -452,6 +527,7 @@ service cloud.firestore {
             && (
               (request.resource.data.source == 'contact-form' && hasValidAppCheck())
               || (request.resource.data.source == 'cleaning-booking' && hasValidAppCheck())
+              || (request.resource.data.source == 'inventory-export' && hasValidAppCheck())
               || (request.resource.data.source == 'rental-application' && isAuthenticated())
             )
           )

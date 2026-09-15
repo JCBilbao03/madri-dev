@@ -7,10 +7,15 @@ import { StatCard } from '@/components/rental/StatCard';
 import { StatusBadge } from '@/components/rental/StatusBadge';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
-import { DEMO_PROPERTIES } from '@/data/demoListings';
+import {
+  useRentalDisplayName,
+  useRentalIsDemo,
+  useRentalUpdateApplicationStatus,
+} from '@/hooks/useRentalSession';
 import { authErrorMessage } from '@/lib/auth';
-import { fetchApplications, fetchProperties, updateApplicationStatus } from '@/lib/rentalData';
-import { useAuthStore } from '@/store/useAuthStore';
+import { demoLandlordProperties, mergeDemoApplications, mergeDemoProperties } from '@/lib/rentalDemo';
+import { fetchApplications, fetchProperties } from '@/lib/rentalData';
+import { useRentalDemoStore } from '@/store/useRentalDemoStore';
 import type { ApplicationStatus, Property, RentalApplication } from '@/types/rental';
 
 const REVIEW_ACTIONS: ApplicationStatus[] = ['reviewing', 'accepted', 'declined'];
@@ -87,7 +92,11 @@ function StatusButton({ status, current, applicationId, onStatus }: StatusButton
 }
 
 export function LandlordDashboard() {
-  const name = useAuthStore((state) => state.user?.name);
+  const name = useRentalDisplayName();
+  const isDemo = useRentalIsDemo();
+  const demoApplications = useRentalDemoStore((state) => state.applications);
+  const screeningOverrides = useRentalDemoStore((state) => state.screeningOverrides);
+  const updateApplicationStatus = useRentalUpdateApplicationStatus();
   const [properties, setProperties] = useState<Property[]>([]);
   const [applications, setApplications] = useState<RentalApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -101,15 +110,16 @@ export function LandlordDashboard() {
         return;
       }
 
-      setProperties(listings.length > 0 ? listings : DEMO_PROPERTIES);
-      setApplications(apps);
+      const mergedProperties = mergeDemoProperties(listings, screeningOverrides);
+      setProperties(isDemo ? demoLandlordProperties(mergedProperties) : mergedProperties);
+      setApplications(isDemo ? mergeDemoApplications(demoApplications) : apps);
       setIsLoading(false);
     });
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [demoApplications, isDemo, screeningOverrides]);
 
   const stats = useMemo(
     () => ({
@@ -120,20 +130,23 @@ export function LandlordDashboard() {
     [applications, properties.length],
   );
 
-  const handleStatus = useCallback(async (applicationId: string, status: ApplicationStatus) => {
-    setError('');
-    try {
-      await updateApplicationStatus(applicationId, status);
-      setApplications((current) =>
-        current.map((item) => (item.applicationId === applicationId ? { ...item, status } : item)),
-      );
-    } catch (statusError) {
-      setError(authErrorMessage(statusError));
-    }
-  }, []);
+  const handleStatus = useCallback(
+    async (applicationId: string, status: ApplicationStatus) => {
+      setError('');
+      try {
+        await updateApplicationStatus(applicationId, status);
+        setApplications((current) =>
+          current.map((item) => (item.applicationId === applicationId ? { ...item, status } : item)),
+        );
+      } catch (statusError) {
+        setError(authErrorMessage(statusError));
+      }
+    },
+    [updateApplicationStatus],
+  );
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
+    <main id="main" className="min-h-svh bg-base pb-16">
       <Container>
         <p className="text-sm font-medium text-accent-soft">Landlord</p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink">

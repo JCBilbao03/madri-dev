@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Inventory app">
+  <rect width="64" height="64" rx="16" fill="#3DD6C6" fill-opacity="0.12"/>
+  <path d="M14 24L32 14L50 24V44L32 54L14 44V24Z" stroke="#3DD6C6" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M32 14V54M14 24L32 34L50 24M32 34V54" stroke="#3DD6C6" stroke-width="2.5" stroke-linejoin="round"/>
+  <rect x="20" y="36" width="24" height="12" rx="1.5" stroke="#3DD6C6" stroke-width="1.5"/>
+  <path d="M20 40H28M20 44H26M36 40H44M36 44H42" stroke="#3DD6C6" stroke-width="2" stroke-linecap="round"/>
+</svg>

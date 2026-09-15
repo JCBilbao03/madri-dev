@@ -1,44 +1,58 @@
 import { LeadCard } from '@/components/admin/LeadCard';
+import { LeadEmptyState } from '@/components/admin/LeadEmptyState';
 import { LeadTableRow } from '@/components/admin/LeadTableRow';
+import { cn } from '@/lib/utils';
 import type { Lead, LeadAdminOption, LeadStatus } from '@/types/admin';
 
-const BASE_COLUMNS = ['Date', 'Name', 'Email', 'App', 'Source', 'Summary', 'Status', 'Assignee'] as const;
+const BASE_COLUMNS = ['Date', 'Lead', 'Email', 'App', 'Source', 'Summary', 'Reach out', 'Status', 'Assignee'] as const;
 
 interface LeadTableProps {
   leads: Lead[];
   admins?: LeadAdminOption[];
+  hasActiveFilters?: boolean;
   onStatus?: (leadId: string, status: LeadStatus) => void | Promise<void>;
   onAssignee?: (leadId: string, assigneeId: string) => void | Promise<void>;
+  onFollowUp?: (leadId: string, followUpAt: string) => void | Promise<void>;
   onEdit?: (lead: Lead) => void;
   onNotes?: (lead: Lead) => void;
   onDelete?: (lead: Lead) => void;
+  onClearFilters?: () => void;
+  onAddLead?: () => void;
   emptyLabel: string;
+  className?: string;
 }
 
 export function LeadTable({
   leads,
   admins,
+  hasActiveFilters = false,
   onStatus,
   onAssignee,
+  onFollowUp,
   onEdit,
   onNotes,
   onDelete,
-  emptyLabel,
+  onClearFilters,
+  onAddLead,
+  emptyLabel: _emptyLabel,
+  className,
 }: LeadTableProps) {
   const canManage = Boolean(onEdit && onNotes && onDelete);
   const columns = canManage ? [...BASE_COLUMNS, 'Actions'] : [...BASE_COLUMNS];
 
   if (leads.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-line bg-surface p-6 text-center text-sm text-ink-muted sm:p-10">
-        {emptyLabel}
-      </p>
+      <LeadEmptyState
+        filtered={hasActiveFilters}
+        onClearFilters={onClearFilters}
+        onAddLead={onAddLead}
+      />
     );
   }
 
   return (
-    <>
-      <ul className="grid gap-3 lg:hidden">
+    <div className={cn('min-h-0 overflow-auto', className)}>
+      <ul className="divide-y divide-line lg:hidden">
         {leads.map((lead) => (
           <li key={lead.leadId}>
             <LeadCard
@@ -46,6 +60,7 @@ export function LeadTable({
               admins={admins}
               onStatus={onStatus}
               onAssignee={onAssignee}
+              onFollowUp={onFollowUp}
               onEdit={onEdit}
               onNotes={onNotes}
               onDelete={onDelete}
@@ -54,15 +69,15 @@ export function LeadTable({
         ))}
       </ul>
 
-      <div className="hidden overflow-x-auto rounded-xl border border-line bg-surface lg:block">
-        <table className="min-w-[80rem] w-full border-collapse text-left text-sm">
+      <div className="hidden w-full lg:block">
+        <table className="w-full min-w-[72rem] border-collapse text-left text-sm">
           <thead>
-            <tr className="bg-surface-raised">
+            <tr className="border-b border-line">
               {columns.map((column) => (
                 <th
                   key={column}
                   scope="col"
-                  className="sticky top-0 border-b border-line px-3 py-2.5 text-xs font-semibold tracking-wide text-ink-muted uppercase"
+                  className="sticky top-0 z-10 bg-base px-3 py-2 text-left text-xs font-normal text-ink-muted"
                 >
                   {column}
                 </th>
@@ -77,6 +92,7 @@ export function LeadTable({
                 admins={admins}
                 onStatus={onStatus}
                 onAssignee={onAssignee}
+                onFollowUp={onFollowUp}
                 onEdit={onEdit}
                 onNotes={onNotes}
                 onDelete={onDelete}
@@ -85,6 +101,6 @@ export function LeadTable({
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }

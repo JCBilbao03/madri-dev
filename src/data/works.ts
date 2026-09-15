@@ -1,4 +1,4 @@
-export type WorkPreviewVariant = 'rental' | 'cleaning';
+export type WorkPreviewVariant = 'rental' | 'cleaning' | 'inventory';
 
 export interface Work {
   id: string;
@@ -21,7 +21,7 @@ export const works: Work[] = [
     category: 'PropTech',
     description:
       'Tenants browse listings, save favorites, and apply online. Landlords publish properties and review applications from one dashboard.',
-    href: '/login',
+    href: '/tenant',
     ctaLabel: 'Explore rentals',
     appSlug: 'rental',
     preview: 'rental',
@@ -40,5 +40,18 @@ export const works: Work[] = [
     preview: 'cleaning',
     stack: ['React', 'Vite', 'Zustand'],
     highlights: ['Filterable cleaner search', 'Profiles with reviews & services', 'Multi-step booking flow'],
+  },
+  {
+    id: 'inventory-catalog',
+    title: 'Inventory app',
+    category: 'Operations',
+    description:
+      'Catalog products with photos, SKU, stock levels, dimensions, and carton specs. Auto-generate barcode and QR labels for warehouse scanning, then export selections to spreadsheet.',
+    href: '/inventory-app',
+    ctaLabel: 'Open catalog',
+    appSlug: 'inventory',
+    preview: 'inventory',
+    stack: ['React', 'Firestore', 'Barcode & QR'],
+    highlights: ['Photo upload per SKU', 'Stock & dimensional data', 'Barcode/QR label sheets', 'CSV & Excel export'],
   },
 ];

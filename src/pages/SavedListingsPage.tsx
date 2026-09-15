@@ -3,14 +3,19 @@ import { useCallback, useEffect, useState } from 'react';
 import { PropertyCard } from '@/components/rental/PropertyCard';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
+import {
+  useRentalSavedIds,
+  useRentalScreeningOverrides,
+  useRentalToggleSaved,
+} from '@/hooks/useRentalSession';
+import { mergeDemoProperties } from '@/lib/rentalDemo';
 import { fetchProperties } from '@/lib/rentalData';
-import { useAuthStore } from '@/store/useAuthStore';
-import { savedIdsFromProfile, type Property } from '@/types/rental';
+import type { Property } from '@/types/rental';
 
 export function SavedListingsPage() {
-  const profileData = useAuthStore((state) => state.user?.profileData);
-  const toggleSavedProperty = useAuthStore((state) => state.toggleSavedProperty);
-  const savedIds = savedIdsFromProfile(profileData ?? {});
+  const savedIds = useRentalSavedIds();
+  const screeningOverrides = useRentalScreeningOverrides();
+  const toggleSavedProperty = useRentalToggleSaved();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -19,7 +24,7 @@ export function SavedListingsPage() {
 
     void fetchProperties().then((listings) => {
       if (active) {
-        setProperties(listings);
+        setProperties(mergeDemoProperties(listings, screeningOverrides));
         setIsLoading(false);
       }
     });
@@ -27,19 +32,19 @@ export function SavedListingsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [screeningOverrides]);
 
   const saved = properties.filter((property) => savedIds.includes(property.propertyId));
 
   const handleToggleSave = useCallback(
     (propertyId: string) => {
-      void toggleSavedProperty(propertyId);
+      toggleSavedProperty(propertyId);
     },
     [toggleSavedProperty],
   );
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
+    <main id="main" className="min-h-svh bg-base pb-16">
       <Container>
         <p className="text-sm font-medium text-accent-soft">Saved</p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink">Saved homes</h1>

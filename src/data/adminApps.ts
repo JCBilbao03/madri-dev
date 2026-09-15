@@ -18,12 +18,18 @@ export const ADMIN_APPS: AdminApp[] = [
     id: 'rental',
     name: 'Rental marketplace',
     description: 'Tenant applications and landlord listings backed by Firebase.',
-    href: '/login',
+    href: '/tenant',
   },
   {
     id: 'cleaning',
     name: 'Cleaning marketplace',
     description: 'Cleaner search and booking requests from the cleaning demo app.',
     href: '/cleaning-app',
+  },
+  {
+    id: 'inventory',
+    name: 'Inventory app',
+    description: 'Firestore-backed SKU catalog with photos, barcode labels, and CSV/Excel export.',
+    href: '/inventory-app',
   },
 ];

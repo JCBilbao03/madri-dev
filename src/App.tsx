@@ -2,9 +2,11 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { CleaningLayout } from '@/components/cleaning/CleaningLayout';
+import { InventoryLayout } from '@/components/inventory/InventoryLayout';
 import { AuthListener } from '@/components/rental/AuthListener';
 import { GuestOnly } from '@/components/rental/GuestOnly';
 import { RentalLayout } from '@/components/rental/RentalNavbar';
+import { RentalRoleGate } from '@/components/rental/RentalRoleGate';
 import { RequireAuth } from '@/components/rental/RequireAuth';
 import { useThemeSync } from '@/hooks/useThemeSync';
 import { AccountPage } from '@/pages/AccountPage';
@@ -15,6 +17,10 @@ import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
 import { CleanerProfilePage } from '@/pages/CleanerProfilePage';
 import { CleaningDashboardPage } from '@/pages/CleaningDashboardPage';
 import { CleaningSearchPage } from '@/pages/CleaningSearchPage';
+import { InventoryCatalogPage } from '@/pages/InventoryCatalogPage';
+import { InventoryFormPage } from '@/pages/InventoryFormPage';
+import { InventoryItemPage } from '@/pages/InventoryItemPage';
+import { InventoryLabelsPage } from '@/pages/InventoryLabelsPage';
 import { LandingPage } from '@/pages/LandingPage';
 import { LandlordDashboard } from '@/pages/LandlordDashboard';
 import { ListingQuestionsPage } from '@/pages/ListingQuestionsPage';
@@ -66,53 +72,60 @@ export function App() {
           <Route path="cleaner/:id" element={<CleanerProfilePage />} />
           <Route path="dashboard" element={<CleaningDashboardPage />} />
         </Route>
+        <Route path="/inventory-app" element={<InventoryLayout />}>
+          <Route index element={<InventoryCatalogPage />} />
+          <Route path="items/new" element={<InventoryFormPage />} />
+          <Route path="items/:itemId" element={<InventoryItemPage />} />
+          <Route path="items/:itemId/edit" element={<InventoryFormPage />} />
+          <Route path="labels" element={<InventoryLabelsPage />} />
+        </Route>
         <Route element={<RentalLayout />}>
           <Route
             path="/landlord"
             element={
-              <RequireAuth role="landlord">
+              <RentalRoleGate allow="landlord">
                 <LandlordDashboard />
-              </RequireAuth>
+              </RentalRoleGate>
             }
           />
           <Route
             path="/landlord/listings/:propertyId/questions"
             element={
-              <RequireAuth role="landlord">
+              <RentalRoleGate allow="landlord">
                 <ListingQuestionsPage />
-              </RequireAuth>
+              </RentalRoleGate>
             }
           />
           <Route
             path="/tenant"
             element={
-              <RequireAuth role="tenant">
+              <RentalRoleGate allow="tenant">
                 <TenantFeed />
-              </RequireAuth>
+              </RentalRoleGate>
             }
           />
           <Route
             path="/tenant/saved"
             element={
-              <RequireAuth role="tenant">
+              <RentalRoleGate allow="tenant">
                 <SavedListingsPage />
-              </RequireAuth>
+              </RentalRoleGate>
             }
           />
           <Route
             path="/tenant/applications"
             element={
-              <RequireAuth role="tenant">
+              <RentalRoleGate allow="tenant">
                 <MyApplicationsPage />
-              </RequireAuth>
+              </RentalRoleGate>
             }
           />
           <Route
             path="/properties/:propertyId"
             element={
-              <RequireAuth>
+              <RentalRoleGate allow="any">
                 <PropertyDetailPage />
-              </RequireAuth>
+              </RentalRoleGate>
             }
           />
           <Route

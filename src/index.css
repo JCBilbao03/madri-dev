@@ -87,6 +87,216 @@
   }
 }
 
+@layer components {
+  /* Warehouse HUD — scoped to the inventory app so marketing pages stay untouched. */
+  .inventory-shell {
+    --inv-scan: #3dd6c6;
+    --inv-scan-muted: color-mix(in srgb, var(--inv-scan) 55%, var(--color-ink-muted));
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    min-height: 100svh;
+    background-color: var(--color-base);
+  }
+
+  :root.light .inventory-shell {
+    --inv-scan: #0f8f84;
+  }
+
+  .inventory-shell::before {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(var(--color-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.14;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, #000 40%, transparent 80%);
+  }
+
+  .inventory-shell::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--inv-scan) 4%, transparent) 48%,
+      transparent 100%
+    );
+    background-size: 100% 220%;
+    animation: inventory-scan 9s linear infinite;
+  }
+
+  .inventory-shell > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .inventory-panel {
+    position: relative;
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .inventory-input {
+    height: 3rem;
+    width: 100%;
+    border-radius: 0.375rem;
+    border: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-base) 80%, transparent);
+    padding-inline: 0.75rem;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+    outline: none;
+    transition: border-color 150ms var(--ease-out-soft), background-color 150ms var(--ease-out-soft);
+  }
+
+  .inventory-input::placeholder {
+    color: color-mix(in srgb, var(--color-ink-muted) 70%, transparent);
+  }
+
+  .inventory-input:focus {
+    border-color: color-mix(in srgb, var(--inv-scan) 70%, var(--color-line));
+    background: var(--color-surface);
+  }
+
+}
+
+@keyframes inventory-scan {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 220%;
+  }
+}
+
+@keyframes inventory-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.inventory-live-dot {
+  animation: inventory-pulse 1.8s ease-in-out infinite;
+}
+
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0.5in;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  .inventory-shell {
+    min-height: auto !important;
+    background: white !important;
+  }
+
+  .inventory-shell::before,
+  .inventory-shell::after {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .inventory-item-print {
+    margin-top: 0 !important;
+  }
+
+  .inventory-panel {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    backdrop-filter: none !important;
+    break-inside: avoid;
+  }
+
+  .inventory-item-print img {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body[data-print-mode^='codes-'] .inventory-print-header,
+  body[data-print-mode^='codes-'] .inventory-print-photo,
+  body[data-print-mode^='codes-'] .inventory-print-details {
+    display: none !important;
+  }
+
+  body[data-print-mode^='codes-'] .inventory-item-print {
+    display: flex !important;
+    justify-content: center;
+  }
+
+  body[data-print-mode^='codes-'] .inventory-print-body {
+    display: block !important;
+    width: 100%;
+    max-width: 16rem;
+  }
+
+  body[data-print-mode^='codes-'] .inventory-print-codes {
+    display: block !important;
+    margin-inline: auto;
+  }
+
+  body[data-print-mode='codes-barcode'] .inventory-print-qr {
+    display: none !important;
+  }
+
+  body[data-print-mode='codes-qr'] .inventory-print-barcode {
+    display: none !important;
+  }
+
+  body[data-print-mode='codes-qr'] .inventory-print-qr {
+    border-top: none !important;
+    padding-top: 0 !important;
+  }
+
+  body[data-print-mode='labels'] .inventory-catalog-content {
+    display: none !important;
+  }
+
+  body[data-print-mode='labels'] .inventory-label-print {
+    display: block !important;
+  }
+
+  body[data-print-mode='labels'] .label-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.12in !important;
+  }
+
+  body[data-print-mode='labels'] .label-card {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -98,5 +308,10 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .inventory-shell::after,
+  .inventory-live-dot {
+    animation: none !important;
   }
 }

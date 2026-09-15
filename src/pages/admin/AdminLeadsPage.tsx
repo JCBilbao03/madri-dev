@@ -5,12 +5,13 @@ import {
   LeadFilters,
   type LeadAppFilter,
   type LeadAssigneeFilter,
+  type LeadFollowUpFilter,
   type LeadStatusFilter,
 } from '@/components/admin/LeadFilters';
+import { LeadLoadingState } from '@/components/admin/LeadLoadingState';
 import { LeadNotesModal } from '@/components/admin/LeadNotesModal';
 import { LeadTable } from '@/components/admin/LeadTable';
 import { Button } from '@/components/ui/Button';
-import { Container } from '@/components/ui/Container';
 import {
   addLeadNote,
   createLead,
@@ -19,8 +20,10 @@ import {
   fetchLeads,
   updateLead,
   updateLeadAssignee,
+  updateLeadFollowUp,
   updateLeadStatus,
 } from '@/lib/adminData';
+import { countDueFollowUps, isFollowUpDue, sortLeadsByFollowUp } from '@/lib/leadFollowUp';
 import { authErrorMessage } from '@/lib/auth';
 import { useAuthStore } from '@/store/useAuthStore';
 import {
@@ -39,6 +42,7 @@ export function AdminLeadsPage() {
   const [appId, setAppId] = useState<LeadAppFilter>('all');
   const [status, setStatus] = useState<LeadStatusFilter>('all');
   const [assignee, setAssignee] = useState<LeadAssigneeFilter>('all');
+  const [followUp, setFollowUp] = useState<LeadFollowUpFilter>('all');
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -76,7 +80,7 @@ export function AdminLeadsPage() {
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
 
-    return leads.filter((lead) => {
+    const result = leads.filter((lead) => {
       const matchesApp = appId === 'all' || lead.appId === appId;
       const matchesStatus = status === 'all' || lead.status === status;
       const matchesAssignee =
@@ -91,9 +95,34 @@ export function AdminLeadsPage() {
         lead.notes.some((note) => note.text.toLowerCase().includes(needle)) ||
         lead.assigneeName.toLowerCase().includes(needle);
 
-      return matchesApp && matchesStatus && matchesAssignee && matchesQuery;
+      const matchesFollowUp =
+        followUp === 'all' || isFollowUpDue(lead.followUpAt, lead.status);
+
+      return matchesApp && matchesStatus && matchesAssignee && matchesQuery && matchesFollowUp;
     });
-  }, [appId, assignee, leads, query, status]);
+
+    return sortLeadsByFollowUp(result);
+  }, [appId, assignee, followUp, leads, query, status]);
+
+  const dueCount = useMemo(() => countDueFollowUps(leads), [leads]);
+
+  const hasActiveFilters = useMemo(
+    () =>
+      appId !== 'all' ||
+      status !== 'all' ||
+      assignee !== 'all' ||
+      followUp !== 'all' ||
+      query.trim().length > 0,
+    [appId, assignee, followUp, query, status],
+  );
+
+  const clearFilters = useCallback(() => {
+    setAppId('all');
+    setStatus('all');
+    setAssignee('all');
+    setFollowUp('all');
+    setQuery('');
+  }, []);
 
   const closeEditor = useCallback(() => {
     setIsEditorOpen(false);
@@ -137,6 +166,18 @@ export function AdminLeadsPage() {
     [admins],
   );
 
+  const handleFollowUp = useCallback(async (leadId: string, followUpAt: string) => {
+    setError('');
+    try {
+      await updateLeadFollowUp(leadId, followUpAt);
+      setLeads((current) =>
+        current.map((lead) => (lead.leadId === leadId ? { ...lead, followUpAt } : lead)),
+      );
+    } catch (followUpError) {
+      setError(authErrorMessage(followUpError));
+    }
+  }, []);
+
   const handleStatus = useCallback(
     async (leadId: string, nextStatus: LeadStatus) => {
       setError('');
@@ -175,6 +216,7 @@ export function AdminLeadsPage() {
                   ...lead,
                   ...values,
                   source: values.source ?? SOURCE_BY_APP[values.appId],
+                  followUpAt: values.followUpAt,
                 }
               : lead,
           ),
@@ -219,17 +261,11 @@ export function AdminLeadsPage() {
   );
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-36 pb-24 lg:pt-28 lg:pb-16">
-      <Container className="max-w-[88rem]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-accent-soft">Admin</p>
-            <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Lead monitoring</h1>
-            <p className="mt-3 max-w-2xl text-sm text-ink-muted sm:text-base">
-              Add, edit, and delete leads, assign them to an admin, or attach follow-up notes.
-            </p>
-          </div>
-          <Button variant="cta" className="w-full sm:w-auto" onClick={openCreate}>
+    <main id="main" className="flex min-h-svh w-full flex-col bg-base pt-36 pb-6 lg:pt-28 lg:pb-6">
+      <div className="flex min-h-0 w-full flex-1 flex-col px-5 sm:px-8 lg:px-10">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-xl font-medium text-ink sm:text-2xl">Leads monitoring</h1>
+          <Button variant="secondary" size="sm" className="shrink-0" onClick={openCreate}>
             Add lead
           </Button>
         </div>
@@ -238,34 +274,44 @@ export function AdminLeadsPage() {
           appId={appId}
           status={status}
           assignee={assignee}
+          followUp={followUp}
           query={query}
           admins={admins}
+          resultCount={filtered.length}
+          totalCount={leads.length}
+          dueCount={dueCount}
+          hasActiveFilters={hasActiveFilters}
           onAppChange={setAppId}
           onStatusChange={setStatus}
           onAssigneeChange={setAssignee}
+          onFollowUpChange={setFollowUp}
           onQueryChange={setQuery}
+          onClearFilters={clearFilters}
         />
 
-        <p className="mt-5 text-sm text-ink-muted">
-          {isLoading ? 'Loading leads…' : `Showing ${filtered.length} of ${leads.length} leads`}
-        </p>
-
-        <div className="mt-3">
-          {isLoading ? null : (
+        <div className="mt-6 flex min-h-0 flex-1 flex-col">
+          {isLoading ? (
+            <LeadLoadingState />
+          ) : (
             <LeadTable
               leads={filtered}
               admins={admins}
+              hasActiveFilters={hasActiveFilters}
               onStatus={handleStatus}
               onAssignee={handleAssignee}
+              onFollowUp={handleFollowUp}
               onEdit={openEdit}
               onNotes={setNotesLead}
               onDelete={handleDelete}
+              onClearFilters={clearFilters}
+              onAddLead={openCreate}
               emptyLabel="No leads match these filters."
+              className="flex-1"
             />
           )}
         </div>
         {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
-      </Container>
+      </div>
 
       <LeadEditorModal
         isOpen={isEditorOpen}

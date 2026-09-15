@@ -2,10 +2,28 @@ import { collection, getDocs } from 'firebase/firestore';
 
 import { asUserProfile } from '@/lib/auth';
 import { db } from '@/lib/firebase';
-import { fetchLeads, updateLeadStatus, updateLeadAssignee, updateLead, deleteLead, addLeadNote, createLead } from '@/lib/leads';
+import {
+  createLead,
+  deleteLead,
+  addLeadNote,
+  fetchLeads,
+  updateLead,
+  updateLeadAssignee,
+  updateLeadFollowUp,
+  updateLeadStatus,
+} from '@/lib/leads';
 import type { UserProfile } from '@/types/rental';
 
-export { fetchLeads, updateLeadStatus, updateLeadAssignee, updateLead, deleteLead, addLeadNote, createLead };
+export {
+  fetchLeads,
+  updateLeadStatus,
+  updateLeadAssignee,
+  updateLeadFollowUp,
+  updateLead,
+  deleteLead,
+  addLeadNote,
+  createLead,
+};
 
 export async function fetchAdmins(): Promise<UserProfile[]> {
   const users = await fetchUsers();

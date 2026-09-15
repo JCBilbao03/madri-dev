@@ -3,15 +3,21 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ListingFilters } from '@/components/rental/ListingFilters';
 import { PropertyCard } from '@/components/rental/PropertyCard';
 import { Container } from '@/components/ui/Container';
+import {
+  useRentalDisplayName,
+  useRentalSavedIds,
+  useRentalScreeningOverrides,
+  useRentalToggleSaved,
+} from '@/hooks/useRentalSession';
+import { mergeDemoProperties } from '@/lib/rentalDemo';
 import { fetchProperties, filterProperties, sortProperties } from '@/lib/rentalData';
-import { useAuthStore } from '@/store/useAuthStore';
-import { savedIdsFromProfile, type ListingSort, type Property } from '@/types/rental';
+import { type ListingSort, type Property } from '@/types/rental';
 
 export function TenantFeed() {
-  const name = useAuthStore((state) => state.user?.name);
-  const profileData = useAuthStore((state) => state.user?.profileData);
-  const toggleSavedProperty = useAuthStore((state) => state.toggleSavedProperty);
-  const savedIds = savedIdsFromProfile(profileData ?? {});
+  const name = useRentalDisplayName();
+  const savedIds = useRentalSavedIds();
+  const screeningOverrides = useRentalScreeningOverrides();
+  const toggleSavedProperty = useRentalToggleSaved();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -24,7 +30,7 @@ export function TenantFeed() {
 
     void fetchProperties().then((listings) => {
       if (active) {
-        setProperties(listings);
+        setProperties(mergeDemoProperties(listings, screeningOverrides));
         setIsLoading(false);
       }
     });
@@ -32,7 +38,7 @@ export function TenantFeed() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [screeningOverrides]);
 
   const visible = useMemo(() => {
     const cap = maxPrice.trim() === '' ? null : Number(maxPrice);
@@ -47,13 +53,13 @@ export function TenantFeed() {
 
   const handleToggleSave = useCallback(
     (propertyId: string) => {
-      void toggleSavedProperty(propertyId);
+      toggleSavedProperty(propertyId);
     },
     [toggleSavedProperty],
   );
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
+    <main id="main" className="min-h-svh bg-base pb-16">
       <Container>
         <p className="text-sm font-medium text-accent-soft">Tenant</p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink">

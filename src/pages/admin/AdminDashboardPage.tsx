@@ -60,6 +60,7 @@ export function AdminDashboardPage() {
       marketing: leads.filter((lead) => lead.appId === 'marketing').length,
       rental: leads.filter((lead) => lead.appId === 'rental').length,
       cleaning: leads.filter((lead) => lead.appId === 'cleaning').length,
+      inventory: leads.filter((lead) => lead.appId === 'inventory').length,
     }),
     [leads],
   );
@@ -75,7 +76,7 @@ export function AdminDashboardPage() {
           {name ? `Welcome, ${name}` : 'Overview'}
         </h1>
         <p className="mt-3 max-w-xl text-ink-muted">
-          Monitor users and leads across the MadriBuild site, rental marketplace, and cleaning app.
+          Monitor users and leads across the MadriBuild site, rental marketplace, cleaning app, and inventory catalog.
         </p>
 
         {isLoading ? (
@@ -106,6 +107,7 @@ export function AdminDashboardPage() {
               <StatCard label="MadriBuild site" value={leadStats.marketing} />
               <StatCard label="Rental" value={leadStats.rental} />
               <StatCard label="Cleaning" value={leadStats.cleaning} />
+              <StatCard label="Inventory" value={leadStats.inventory} />
             </div>
 
             <h2 className="mt-12 font-display text-lg font-semibold text-ink sm:text-xl">Recent leads</h2>

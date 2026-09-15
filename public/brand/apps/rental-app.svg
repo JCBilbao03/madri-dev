@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Rental app">
+  <rect width="64" height="64" rx="16" fill="#F26A3A" fill-opacity="0.12"/>
+  <path d="M32 14L50 28V48H14V28L32 14Z" stroke="#F26A3A" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M24 48V34H40V48" stroke="#F26A3A" stroke-width="2.5" stroke-linejoin="round"/>
+  <rect x="29" y="38" width="6" height="10" rx="1" fill="#F26A3A"/>
+  <circle cx="46" cy="22" r="5" stroke="#F26A3A" stroke-width="2"/>
+  <path d="M49.5 25.5L54 30" stroke="#F26A3A" stroke-width="2" stroke-linecap="round"/>
+</svg>

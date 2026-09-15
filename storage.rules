@@ -7,6 +7,14 @@ service firebase.storage {
       allow write: if false;
     }
 
+    // Product photos for the inventory catalog demo.
+    match /inventory/{itemId}/{fileName} {
+      allow read: if true;
+      allow write: if request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if true;
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

@@ -39,7 +39,7 @@ export function AdminAppsPage() {
   }, []);
 
   const counts = useMemo(() => {
-    const next: Record<AppId, number> = { marketing: 0, rental: 0, cleaning: 0 };
+    const next: Record<AppId, number> = { marketing: 0, rental: 0, cleaning: 0, inventory: 0 };
     for (const lead of leads) {
       next[lead.appId] += 1;
     }

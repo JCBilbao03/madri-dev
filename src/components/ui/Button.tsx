@@ -9,8 +9,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'border border-accent bg-accent text-base hover:bg-accent-soft active:bg-accent/95',
-        cta: 'border border-accent bg-accent text-base hover:bg-accent-soft active:bg-accent/95',
+        primary: 'border border-accent bg-accent text-white hover:bg-accent-soft active:bg-accent/95',
+        cta: 'border border-accent bg-accent text-white hover:bg-accent-soft active:bg-accent/95',
         secondary:
           'border border-line bg-surface text-ink hover:border-ink-muted/30 hover:bg-surface-raised active:bg-surface',
         ghost: 'text-ink-muted hover:bg-surface hover:text-ink active:bg-surface-raised',

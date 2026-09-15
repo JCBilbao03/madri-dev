@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useState, type ChangeEvent, type FormEve
 
 import { AdminDialog } from '@/components/admin/AdminDialog';
 import { Button } from '@/components/ui/Button';
+import { addDaysFromToday, presetOptionLabel, REACH_OUT_PRESETS } from '@/lib/leadFollowUp';
 import { cn } from '@/lib/utils';
 import {
   APP_IDS,
@@ -34,6 +35,7 @@ interface LeadFormValues {
   sourceDetail: string;
   status: LeadStatus;
   assigneeId: string;
+  followUpPreset: string;
 }
 
 type FieldName = keyof LeadFormValues;
@@ -48,6 +50,7 @@ const EMPTY: LeadFormValues = {
   sourceDetail: '',
   status: 'new',
   assigneeId: '',
+  followUpPreset: '',
 };
 
 function valuesFromLead(lead: Lead): LeadFormValues {
@@ -60,6 +63,7 @@ function valuesFromLead(lead: Lead): LeadFormValues {
     sourceDetail: lead.sourceDetail,
     status: lead.status,
     assigneeId: lead.assigneeId,
+    followUpPreset: '',
   };
 }
 
@@ -150,6 +154,12 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
       }
 
       const assigned = admins.find((admin) => admin.uid === values.assigneeId);
+      const followUpDays = values.followUpPreset ? Number.parseInt(values.followUpPreset, 10) : NaN;
+      const followUpAt =
+        Number.isFinite(followUpDays) && followUpDays > 0
+          ? addDaysFromToday(followUpDays)
+          : lead?.followUpAt ?? '';
+
       const payload: LeadUpdateInput = {
         name: values.name.trim(),
         email: values.email.trim(),
@@ -158,6 +168,7 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
         source: values.source,
         sourceDetail: values.source === OTHER_LEAD_SOURCE ? values.sourceDetail.trim() : '',
         status: values.status,
+        followUpAt,
         assigneeId: assigned?.uid ?? '',
         assigneeName: assigned?.name.trim() ?? '',
       };
@@ -301,6 +312,28 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
             {admins.map((admin) => (
               <option key={admin.uid} value={admin.uid}>
                 {admin.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor={`${fieldId}-followUpPreset`} className="mb-2 block text-sm font-medium text-ink">
+            Reach out
+          </label>
+          <select
+            id={`${fieldId}-followUpPreset`}
+            name="followUpPreset"
+            value={values.followUpPreset}
+            onChange={handleChange}
+            className={fieldClasses}
+          >
+            <option value="">
+              {lead?.followUpAt ? `Keep scheduled · ${lead.followUpAt}` : 'No follow-up scheduled'}
+            </option>
+            {REACH_OUT_PRESETS.map((preset) => (
+              <option key={preset.days} value={String(preset.days)}>
+                {presetOptionLabel(preset.days)}
               </option>
             ))}
           </select>

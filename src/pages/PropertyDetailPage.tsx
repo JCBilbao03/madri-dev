@@ -1,5 +1,5 @@
 import { ArrowLeft, Heart, MapPin } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { ApplicationAnswers } from '@/components/rental/ApplicationAnswers';
@@ -7,30 +7,43 @@ import { ApplicationForm } from '@/components/rental/ApplicationForm';
 import { PropertyGallery } from '@/components/rental/PropertyGallery';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
+import {
+  useRentalActiveRole,
+  useRentalIsDemo,
+  useRentalSavedIds,
+  useRentalScreeningOverrides,
+  useRentalSubmitApplication,
+  useRentalToggleSaved,
+} from '@/hooks/useRentalSession';
 import { authErrorMessage } from '@/lib/auth';
-import { fetchApplicationForProperty, fetchProperty, formatRent, submitApplication } from '@/lib/rentalData';
+import { DEMO_TENANT_ID, mergeDemoApplications, mergeDemoProperties } from '@/lib/rentalDemo';
+import { fetchApplicationForProperty, fetchProperty, formatRent } from '@/lib/rentalData';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
-import {
-  dashboardPath,
-  savedIdsFromProfile,
-  type ApplicationAnswer,
-  type Property,
-  type RentalApplication,
-} from '@/types/rental';
+import { useRentalDemoStore } from '@/store/useRentalDemoStore';
+import type { ApplicationAnswer, Property, RentalApplication } from '@/types/rental';
 
 export function PropertyDetailPage() {
   const { propertyId } = useParams<{ propertyId: string }>();
   const user = useAuthStore((state) => state.user);
-  const role = useAuthStore((state) => state.role);
-  const toggleSavedProperty = useAuthStore((state) => state.toggleSavedProperty);
-  const savedIds = savedIdsFromProfile(user?.profileData ?? {});
+  const activeRole = useRentalActiveRole();
+  const isDemo = useRentalIsDemo();
+  const demoApplications = useRentalDemoStore((state) => state.applications);
+  const screeningOverrides = useRentalScreeningOverrides();
+  const savedIds = useRentalSavedIds();
+  const toggleSavedProperty = useRentalToggleSaved();
+  const submitApplication = useRentalSubmitApplication();
   const [property, setProperty] = useState<Property | null>(null);
   const [application, setApplication] = useState<RentalApplication | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  const mergedDemoApplications = useMemo(
+    () => mergeDemoApplications(demoApplications),
+    [demoApplications],
+  );
 
   useEffect(() => {
     if (!propertyId) {
@@ -42,13 +55,22 @@ export function PropertyDetailPage() {
 
     void (async () => {
       const listing = await fetchProperty(propertyId);
+      const resolvedListing = listing
+        ? mergeDemoProperties([listing], screeningOverrides)[0] ?? null
+        : null;
+
       let existing: RentalApplication | null = null;
-      if (user?.uid && role === 'tenant') {
+      if (user?.uid && activeRole === 'tenant') {
         existing = await fetchApplicationForProperty(user.uid, propertyId);
+      } else if (isDemo && activeRole === 'tenant') {
+        existing =
+          mergedDemoApplications.find(
+            (entry) => entry.propertyId === propertyId && entry.tenantId === DEMO_TENANT_ID,
+          ) ?? null;
       }
 
       if (active) {
-        setProperty(listing);
+        setProperty(resolvedListing);
         setApplication(existing);
         setIsLoading(false);
       }
@@ -57,19 +79,21 @@ export function PropertyDetailPage() {
     return () => {
       active = false;
     };
-  }, [propertyId, role, user?.uid]);
+  }, [activeRole, isDemo, mergedDemoApplications, propertyId, screeningOverrides, user?.uid]);
 
   const isSaved = propertyId ? savedIds.includes(propertyId) : false;
+  const isTenantView = activeRole === 'tenant';
+  const isLandlordView = activeRole === 'landlord';
 
   const handleSave = useCallback(() => {
     if (propertyId) {
-      void toggleSavedProperty(propertyId);
+      toggleSavedProperty(propertyId);
     }
   }, [propertyId, toggleSavedProperty]);
 
   const handleApply = useCallback(
     async (answers: ApplicationAnswer[]) => {
-      if (!user || !property) {
+      if (!property) {
         return;
       }
 
@@ -78,7 +102,7 @@ export function PropertyDetailPage() {
       setMessage('');
 
       try {
-        const created = await submitApplication(user.uid, property.propertyId, answers);
+        const created = await submitApplication(property.propertyId, answers);
         setApplication(created);
         setMessage('Application sent. The landlord will review your answers shortly.');
       } catch (applyError) {
@@ -87,12 +111,12 @@ export function PropertyDetailPage() {
         setIsApplying(false);
       }
     },
-    [property, user],
+    [property, submitApplication],
   );
 
   if (isLoading) {
     return (
-      <main className="grid min-h-svh place-items-center bg-base pt-24 text-sm text-ink-muted">
+      <main className="grid min-h-svh place-items-center bg-base text-sm text-ink-muted">
         Loading listing…
       </main>
     );
@@ -100,10 +124,10 @@ export function PropertyDetailPage() {
 
   if (!property) {
     return (
-      <main className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
+      <main className="min-h-svh bg-base pb-16">
         <Container>
           <h1 className="font-display text-2xl font-semibold text-ink">Listing not found</h1>
-          <Button className="mt-6" variant="secondary" to={role ? dashboardPath(role) : '/login'}>
+          <Button className="mt-6" variant="secondary" to={isLandlordView ? '/landlord' : '/tenant'}>
             Back to listings
           </Button>
         </Container>
@@ -111,11 +135,11 @@ export function PropertyDetailPage() {
     );
   }
 
-  const backTo = role === 'landlord' ? '/landlord' : '/tenant';
+  const backTo = isLandlordView ? '/landlord' : '/tenant';
   const questions = property.screeningQuestions;
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
+    <main id="main" className="min-h-svh bg-base pb-16">
       <Container className="max-w-3xl">
         <Link to={backTo} className="inline-flex items-center gap-2 text-sm text-ink-muted hover:text-ink">
           <ArrowLeft className="size-4" aria-hidden="true" />
@@ -138,7 +162,7 @@ export function PropertyDetailPage() {
               <span className="ml-2 text-base font-normal text-ink-muted">/ month</span>
             </p>
 
-            {role === 'landlord' ? (
+            {isLandlordView ? (
               <div className="mt-8">
                 <h2 className="font-display text-lg font-semibold text-ink">Tenant questions</h2>
                 {questions.length === 0 ? (
@@ -158,7 +182,7 @@ export function PropertyDetailPage() {
               </div>
             ) : null}
 
-            {role === 'tenant' ? (
+            {isTenantView ? (
               <div className="mt-8">
                 <Button size="lg" variant="secondary" onClick={handleSave}>
                   <Heart className={cn('size-4', isSaved && 'fill-current')} aria-hidden="true" />

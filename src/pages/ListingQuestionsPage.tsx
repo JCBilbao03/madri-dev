@@ -5,8 +5,10 @@ import { Link, useParams } from 'react-router-dom';
 import { ScreeningQuestionEditor } from '@/components/rental/ScreeningQuestionEditor';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
+import { useRentalScreeningOverrides, useRentalUpdateScreeningQuestions } from '@/hooks/useRentalSession';
 import { authErrorMessage } from '@/lib/auth';
-import { fetchProperty, updateScreeningQuestions } from '@/lib/rentalData';
+import { mergeDemoProperties } from '@/lib/rentalDemo';
+import { fetchProperty } from '@/lib/rentalData';
 import {
   DEFAULT_SCREENING_QUESTIONS,
   MAX_SCREENING_PROMPT,
@@ -40,6 +42,8 @@ function validateQuestions(questions: ScreeningQuestion[]): string {
 
 export function ListingQuestionsPage() {
   const { propertyId } = useParams<{ propertyId: string }>();
+  const screeningOverrides = useRentalScreeningOverrides();
+  const updateScreeningQuestions = useRentalUpdateScreeningQuestions();
   const [property, setProperty] = useState<Property | null>(null);
   const [questions, setQuestions] = useState<ScreeningQuestion[]>(DEFAULT_SCREENING_QUESTIONS);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,9 +64,10 @@ export function ListingQuestionsPage() {
         return;
       }
 
-      setProperty(listing);
-      if (listing && listing.screeningQuestions.length > 0) {
-        setQuestions(listing.screeningQuestions);
+      const resolved = listing ? mergeDemoProperties([listing], screeningOverrides)[0] ?? null : null;
+      setProperty(resolved);
+      if (resolved && resolved.screeningQuestions.length > 0) {
+        setQuestions(resolved.screeningQuestions);
       }
       setIsLoading(false);
     });
@@ -70,7 +75,7 @@ export function ListingQuestionsPage() {
     return () => {
       active = false;
     };
-  }, [propertyId]);
+  }, [propertyId, screeningOverrides]);
 
   const handleSubmit = useCallback(async () => {
     if (!property) {
@@ -101,7 +106,7 @@ export function ListingQuestionsPage() {
     } finally {
       setIsSaving(false);
     }
-  }, [property, questions]);
+  }, [property, questions, updateScreeningQuestions]);
 
   const handleSaveClick = useCallback(() => {
     void handleSubmit();
@@ -109,7 +114,7 @@ export function ListingQuestionsPage() {
 
   if (isLoading) {
     return (
-      <main className="grid min-h-svh place-items-center bg-base pt-24 text-sm text-ink-muted">
+      <main className="grid min-h-svh place-items-center bg-base text-sm text-ink-muted">
         Loading questions…
       </main>
     );
@@ -117,7 +122,7 @@ export function ListingQuestionsPage() {
 
   if (!property) {
     return (
-      <main className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
+      <main className="min-h-svh bg-base pb-16">
         <Container>
           <h1 className="font-display text-2xl font-semibold text-ink">Listing not found</h1>
           <Button className="mt-6" variant="secondary" to="/landlord">
@@ -129,7 +134,7 @@ export function ListingQuestionsPage() {
   }
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
+    <main id="main" className="min-h-svh bg-base pb-16">
       <Container className="max-w-3xl">
         <Link to="/landlord" className="inline-flex items-center gap-2 text-sm text-ink-muted hover:text-ink">
           <ArrowLeft className="size-4" aria-hidden="true" />

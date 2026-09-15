@@ -1,5 +1,6 @@
 import { collection, deleteDoc, doc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
 
+import { sortLeadsByFollowUp } from '@/lib/leadFollowUp';
 import { db } from '@/lib/firebase';
 import {
   asLead,
@@ -34,6 +35,8 @@ function clipMetadata(metadata: NewLeadInput['metadata']): Lead['metadata'] {
     ['cleanerId', metadata.cleanerId],
     ['serviceType', metadata.serviceType],
     ['address', metadata.address],
+    ['itemCount', metadata.itemCount],
+    ['skus', metadata.skus],
   ];
 
   for (const [key, value] of entries) {
@@ -43,6 +46,15 @@ function clipMetadata(metadata: NewLeadInput['metadata']): Lead['metadata'] {
   }
 
   return next;
+}
+
+function clipFollowUpAt(value: string | undefined): string {
+  const trimmed = clip(value ?? '', 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return '';
+  }
+
+  return trimmed;
 }
 
 function clipAssignee(input: { assigneeId?: string; assigneeName?: string }): Pick<Lead, 'assigneeId' | 'assigneeName'> {
@@ -71,6 +83,7 @@ export async function createLead(input: NewLeadInput): Promise<Lead> {
     summary: clip(input.summary, 400),
     status: isLeadStatus(status) ? status : 'new',
     createdAt: new Date().toISOString(),
+    followUpAt: clipFollowUpAt(input.followUpAt),
     metadata: clipMetadata(input.metadata),
     notes: [],
     ...clipAssignee(input),
@@ -98,7 +111,11 @@ export async function fetchLeads(): Promise<Lead[]> {
     .map((item) => asLead(item.id, item.data()))
     .filter((item): item is Lead => item !== null);
 
-  return leads.sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  return sortLeadsByFollowUp(leads);
+}
+
+export async function updateLeadFollowUp(leadId: string, followUpAt: string): Promise<void> {
+  await updateDoc(doc(db, 'leads', leadId), { followUpAt: clipFollowUpAt(followUpAt) });
 }
 
 export async function updateLeadStatus(leadId: string, status: LeadStatus): Promise<void> {
@@ -122,6 +139,7 @@ export async function updateLead(leadId: string, input: LeadUpdateInput): Promis
     email: clip(input.email, 120),
     summary: clip(input.summary, 400),
     status: input.status,
+    followUpAt: clipFollowUpAt(input.followUpAt),
     ...clipAssignee(input),
   });
 }

@@ -1,13 +1,19 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ApplicationAnswers } from '@/components/rental/ApplicationAnswers';
 import { StatusBadge } from '@/components/rental/StatusBadge';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
+import {
+  useRentalIsDemo,
+  useRentalUpdateApplicationStatus,
+} from '@/hooks/useRentalSession';
 import { authErrorMessage } from '@/lib/auth';
-import { fetchProperties, fetchTenantApplications, updateApplicationStatus } from '@/lib/rentalData';
+import { demoTenantApplications, mergeDemoApplications, mergeDemoProperties } from '@/lib/rentalDemo';
+import { fetchProperties, fetchTenantApplications } from '@/lib/rentalData';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useRentalDemoStore } from '@/store/useRentalDemoStore';
 import type { Property, RentalApplication } from '@/types/rental';
 
 function titleFor(properties: Property[], propertyId: string): string {
@@ -62,37 +68,58 @@ function ApplicationRow({ application, title, onWithdraw }: ApplicationRowProps)
 
 export function MyApplicationsPage() {
   const uid = useAuthStore((state) => state.user?.uid);
+  const isDemo = useRentalIsDemo();
+  const demoApplications = useRentalDemoStore((state) => state.applications);
+  const screeningOverrides = useRentalDemoStore((state) => state.screeningOverrides);
+  const updateApplicationStatus = useRentalUpdateApplicationStatus();
   const [properties, setProperties] = useState<Property[]>([]);
   const [applications, setApplications] = useState<RentalApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const mergedDemoApplications = useMemo(
+    () => demoTenantApplications(mergeDemoApplications(demoApplications)),
+    [demoApplications],
+  );
+
   const load = useCallback(async () => {
-    if (!uid) {
+    const listings = await fetchProperties();
+    setProperties(mergeDemoProperties(listings, screeningOverrides));
+
+    if (isDemo) {
+      setApplications(mergedDemoApplications);
+      setIsLoading(false);
       return;
     }
 
-    const [listings, apps] = await Promise.all([fetchProperties(), fetchTenantApplications(uid)]);
-    setProperties(listings);
+    if (!uid) {
+      setIsLoading(false);
+      return;
+    }
+
+    const apps = await fetchTenantApplications(uid);
     setApplications(apps);
     setIsLoading(false);
-  }, [uid]);
+  }, [isDemo, mergedDemoApplications, screeningOverrides, uid]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const handleWithdraw = useCallback(async (applicationId: string) => {
-    setError('');
-    try {
-      await updateApplicationStatus(applicationId, 'withdrawn');
-      setApplications((current) =>
-        current.map((item) => (item.applicationId === applicationId ? { ...item, status: 'withdrawn' } : item)),
-      );
-    } catch (withdrawError) {
-      setError(authErrorMessage(withdrawError));
-    }
-  }, []);
+  const handleWithdraw = useCallback(
+    async (applicationId: string) => {
+      setError('');
+      try {
+        await updateApplicationStatus(applicationId, 'withdrawn');
+        setApplications((current) =>
+          current.map((item) => (item.applicationId === applicationId ? { ...item, status: 'withdrawn' } : item)),
+        );
+      } catch (withdrawError) {
+        setError(authErrorMessage(withdrawError));
+      }
+    },
+    [updateApplicationStatus],
+  );
 
   const handleWithdrawClick = useCallback(
     (applicationId: string) => {
@@ -102,7 +129,7 @@ export function MyApplicationsPage() {
   );
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-36 pb-16 sm:pt-28">
+    <main id="main" className="min-h-svh bg-base pb-16">
       <Container>
         <p className="text-sm font-medium text-accent-soft">Applications</p>
         <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink">Your applications</h1>

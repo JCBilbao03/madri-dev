@@ -10,19 +10,20 @@ export function Works() {
       <Container>
         <Reveal>
           <SectionHeader
+            align="left"
             eyebrow="Work"
             title="Products we"
             titleAccent="built"
             headingId="work-heading"
-            description="Two live marketplaces on the same React and Firebase stack we ship for clients. Tap a card to walk through each app."
-            className="max-w-xl"
-            descriptionClassName="max-w-lg leading-7 text-ink/85"
+            description="Three live apps on the same React and Firebase stack we ship for clients. Tap a card to walk through each demo."
+            className="max-w-2xl"
+            descriptionClassName="max-w-xl leading-7 text-ink/85"
           />
         </Reveal>
 
-        <ul className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10">
+        <ul className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-6">
           {works.map((work, index) => (
-            <Reveal as="li" key={work.id} delay={index * 0.08} className="h-full">
+            <Reveal as="li" key={work.id} delay={index * 0.08} className="h-full min-w-0">
               <WorkCard work={work} index={index} />
             </Reveal>
           ))}

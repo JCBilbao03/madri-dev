@@ -1,8 +1,8 @@
-export const APP_IDS = ['marketing', 'rental', 'cleaning'] as const;
+export const APP_IDS = ['marketing', 'rental', 'cleaning', 'inventory'] as const;
 
 export type AppId = (typeof APP_IDS)[number];
 
-export const APP_LEAD_SOURCES = ['contact-form', 'rental-application', 'cleaning-booking'] as const;
+export const APP_LEAD_SOURCES = ['contact-form', 'rental-application', 'cleaning-booking', 'inventory-export'] as const;
 
 export const SOCIAL_LEAD_SOURCES = ['facebook', 'instagram'] as const;
 
@@ -30,6 +30,7 @@ export const SOURCE_BY_APP: Record<AppId, LeadSource> = {
   marketing: 'contact-form',
   rental: 'rental-application',
   cleaning: 'cleaning-booking',
+  inventory: 'inventory-export',
 };
 
 export interface LeadMetadata {
@@ -40,6 +41,8 @@ export interface LeadMetadata {
   cleanerId?: string;
   serviceType?: string;
   address?: string;
+  itemCount?: string;
+  skus?: string;
 }
 
 export interface LeadNote {
@@ -66,6 +69,8 @@ export interface Lead {
   summary: string;
   status: LeadStatus;
   createdAt: string;
+  /** Next reach-out date (YYYY-MM-DD). */
+  followUpAt: string;
   metadata: LeadMetadata;
   notes: LeadNote[];
   assigneeId: string;
@@ -83,6 +88,7 @@ export interface NewLeadInput {
   metadata?: LeadMetadata;
   assigneeId?: string;
   assigneeName?: string;
+  followUpAt?: string;
 }
 
 export interface LeadUpdateInput {
@@ -93,6 +99,7 @@ export interface LeadUpdateInput {
   email: string;
   summary: string;
   status: LeadStatus;
+  followUpAt: string;
   assigneeId: string;
   assigneeName: string;
 }
@@ -101,12 +108,14 @@ export const APP_LABELS: Record<AppId, string> = {
   marketing: 'MadriBuild site',
   rental: 'Rental',
   cleaning: 'Cleaning',
+  inventory: 'Inventory',
 };
 
 export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   'contact-form': 'Contact form',
   'rental-application': 'Rental application',
   'cleaning-booking': 'Cleaning booking',
+  'inventory-export': 'Inventory export',
   facebook: 'Facebook',
   instagram: 'Instagram',
   linkedin: 'LinkedIn',
@@ -148,6 +157,8 @@ export function asLeadMetadata(value: unknown): LeadMetadata {
     'cleanerId',
     'serviceType',
     'address',
+    'itemCount',
+    'skus',
   ];
 
   for (const key of keys) {
@@ -216,6 +227,7 @@ export function asLead(id: string, data: Record<string, unknown>): Lead | null {
     summary: data.summary,
     status: data.status,
     createdAt: data.createdAt,
+    followUpAt: typeof data.followUpAt === 'string' ? data.followUpAt : '',
     metadata: asLeadMetadata(data.metadata),
     notes: asLeadNotes(data.notes),
     assigneeId: typeof data.assigneeId === 'string' ? data.assigneeId : '',

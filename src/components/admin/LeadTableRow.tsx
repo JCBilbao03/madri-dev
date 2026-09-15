@@ -1,48 +1,73 @@
 import { LeadAssigneeSelect } from '@/components/admin/LeadAssigneeSelect';
+import { LeadFollowUpBadge } from '@/components/admin/LeadFollowUpBadge';
+import { LeadReachOutSelect } from '@/components/admin/LeadReachOutSelect';
 import { LeadRowActions } from '@/components/admin/LeadRowActions';
 import { LeadStatusBadge } from '@/components/admin/LeadStatusBadge';
 import { LeadStatusSelect } from '@/components/admin/LeadStatusSelect';
+import { isFollowUpDue } from '@/lib/leadFollowUp';
+import { cn } from '@/lib/utils';
 import { APP_LABELS, formatLeadDate, formatLeadSource, leadAssigneeLabel } from '@/types/admin';
 
 import type { LeadItemProps } from '@/components/admin/LeadCard';
 
-function formatLeadTime(timestamp: string): string {
-  return new Date(timestamp).toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
-
-export function LeadTableRow({ lead, admins = [], onStatus, onAssignee, onEdit, onNotes, onDelete }: LeadItemProps) {
+export function LeadTableRow({
+  lead,
+  admins = [],
+  onStatus,
+  onAssignee,
+  onFollowUp,
+  onEdit,
+  onNotes,
+  onDelete,
+}: LeadItemProps) {
   const canManage = Boolean(onEdit && onNotes && onDelete);
+  const isDue = isFollowUpDue(lead.followUpAt, lead.status);
 
   return (
-    <tr className="border-t border-line even:bg-base/40 hover:bg-surface-raised">
-      <td className="whitespace-nowrap px-3 py-2.5 align-top">
-        <p className="text-ink">{formatLeadDate(lead.createdAt)}</p>
-        <p className="text-xs text-ink-muted">{formatLeadTime(lead.createdAt)}</p>
+    <tr className={cn('border-t border-line', isDue && 'bg-danger/[0.03]')}>
+      <td className="whitespace-nowrap px-3 py-3 align-top text-sm text-ink-muted">{formatLeadDate(lead.createdAt)}</td>
+      <td className="max-w-[12rem] px-3 py-3 align-top">
+        <p className="font-medium text-ink">{lead.name}</p>
+        <LeadFollowUpBadge followUpAt={lead.followUpAt} status={lead.status} className="mt-0.5 block" />
       </td>
-      <td className="max-w-[10rem] px-3 py-2.5 align-top font-medium text-ink">{lead.name}</td>
-      <td className="max-w-[14rem] px-3 py-2.5 align-top">
+      <td className="max-w-[14rem] px-3 py-3 align-top">
         {lead.email ? (
-          <a href={`mailto:${lead.email}`} className="break-all text-accent-soft hover:text-ink">
+          <a href={`mailto:${lead.email}`} className="break-all text-sm text-ink-muted hover:text-ink">
             {lead.email}
           </a>
         ) : (
           <span className="text-ink-muted">—</span>
         )}
       </td>
-      <td className="whitespace-nowrap px-3 py-2.5 align-top text-ink">{APP_LABELS[lead.appId]}</td>
-      <td className="whitespace-nowrap px-3 py-2.5 align-top text-ink-muted">{formatLeadSource(lead)}</td>
-      <td className="min-w-[16rem] max-w-[28rem] px-3 py-2.5 align-top text-ink">{lead.summary}</td>
-      <td className="whitespace-nowrap px-3 py-2.5 align-top">
+      <td className="whitespace-nowrap px-3 py-3 align-top text-sm text-ink-muted">{APP_LABELS[lead.appId]}</td>
+      <td className="whitespace-nowrap px-3 py-3 align-top text-sm text-ink-muted">{formatLeadSource(lead)}</td>
+      <td className="min-w-[16rem] px-3 py-3 align-top text-sm text-ink">{lead.summary}</td>
+      <td className="whitespace-nowrap px-3 py-3 align-top">
+        {onFollowUp ? (
+          <LeadReachOutSelect
+            leadId={lead.leadId}
+            name={lead.name}
+            followUpAt={lead.followUpAt}
+            onFollowUp={onFollowUp}
+          />
+        ) : (
+          <span className="text-sm text-ink-muted">{lead.followUpAt || '—'}</span>
+        )}
+      </td>
+      <td className="whitespace-nowrap px-3 py-3 align-top">
         {onStatus ? (
-          <LeadStatusSelect leadId={lead.leadId} name={lead.name} status={lead.status} onStatus={onStatus} />
+          <LeadStatusSelect
+            leadId={lead.leadId}
+            name={lead.name}
+            status={lead.status}
+            onStatus={onStatus}
+            className="h-9 min-w-[8.5rem] rounded-lg text-sm"
+          />
         ) : (
           <LeadStatusBadge status={lead.status} />
         )}
       </td>
-      <td className="whitespace-nowrap px-3 py-2.5 align-top">
+      <td className="whitespace-nowrap px-3 py-3 align-top">
         {onAssignee ? (
           <LeadAssigneeSelect
             leadId={lead.leadId}
@@ -51,13 +76,14 @@ export function LeadTableRow({ lead, admins = [], onStatus, onAssignee, onEdit, 
             assigneeName={lead.assigneeName}
             admins={admins}
             onAssignee={onAssignee}
+            className="h-9 min-w-[8.5rem] rounded-lg text-sm"
           />
         ) : (
-          <span className="text-sm text-ink">{leadAssigneeLabel(lead, admins)}</span>
+          <span className="text-sm text-ink-muted">{leadAssigneeLabel(lead, admins)}</span>
         )}
       </td>
       {canManage && onEdit && onNotes && onDelete ? (
-        <td className="whitespace-nowrap px-3 py-2.5 align-top">
+        <td className="whitespace-nowrap px-3 py-3 align-top">
           <LeadRowActions lead={lead} onEdit={onEdit} onNotes={onNotes} onDelete={onDelete} />
         </td>
       ) : null}
