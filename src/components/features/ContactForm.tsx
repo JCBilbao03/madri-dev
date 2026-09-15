@@ -76,7 +76,8 @@ export function ContactForm({ className }: ContactFormProps) {
         setStatus('success');
         setStatusMessage(result.message);
         setValues(EMPTY_FORM);
-      } catch {
+      } catch (error) {
+        console.error('[MadriBuild] Contact form submission failed', error);
         setStatus('error');
         setStatusMessage('Something went wrong on our end. Please email us directly instead.');
       }

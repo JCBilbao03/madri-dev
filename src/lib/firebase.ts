@@ -1,5 +1,10 @@
 import { initializeApp } from 'firebase/app';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import {
+  getToken,
+  initializeAppCheck,
+  ReCaptchaEnterpriseProvider,
+  type AppCheck,
+} from 'firebase/app-check';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
@@ -25,15 +30,26 @@ export const firebaseApp = initializeApp(firebaseConfig);
 
 const appCheckSiteKey = import.meta.env.VITE_FIREBASE_APP_CHECK_SITE_KEY;
 
+let appCheck: AppCheck | undefined;
+
 if (typeof window !== 'undefined' && appCheckSiteKey) {
   if (import.meta.env.DEV) {
     window.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
   }
 
-  initializeAppCheck(firebaseApp, {
-    provider: new ReCaptchaV3Provider(appCheckSiteKey),
+  appCheck = initializeAppCheck(firebaseApp, {
+    provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
     isTokenAutoRefreshEnabled: true,
   });
+}
+
+/** Lead writes require a valid App Check token in Firestore rules. */
+export async function ensureAppCheckToken(): Promise<void> {
+  if (!appCheck) {
+    return;
+  }
+
+  await getToken(appCheck, false);
 }
 
 /** Firebase Authentication — email/password for the rental marketplace. */

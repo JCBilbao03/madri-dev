@@ -1,7 +1,7 @@
 import { collection, deleteDoc, doc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
 
 import { sortLeadsByFollowUp } from '@/lib/leadFollowUp';
-import { db } from '@/lib/firebase';
+import { db, ensureAppCheckToken } from '@/lib/firebase';
 import {
   asLead,
   assigneeFieldsFromAdmin,
@@ -88,6 +88,10 @@ export async function createLead(input: NewLeadInput): Promise<Lead> {
     notes: [],
     ...clipAssignee(input),
   };
+
+  if (source === 'contact-form' || source === 'cleaning-booking' || source === 'inventory-export') {
+    await ensureAppCheckToken();
+  }
 
   await setDoc(doc(db, 'leads', leadId), lead);
   return lead;

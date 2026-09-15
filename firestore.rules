@@ -196,10 +196,6 @@ service cloud.firestore {
       return ownsProperty(data.propertyId);
     }
 
-    function hasValidAppCheck() {
-      return request.app != null;
-    }
-
     function answersMatchQuestions(data) {
       return exists(/databases/$(database)/documents/properties/$(data.propertyId))
         && listingData(data.propertyId).screeningQuestions is list
@@ -525,9 +521,7 @@ service cloud.firestore {
             && (!('assigneeId' in request.resource.data) || request.resource.data.assigneeId.size() == 0)
             && (!('assigneeName' in request.resource.data) || request.resource.data.assigneeName.size() == 0)
             && (
-              (request.resource.data.source == 'contact-form' && hasValidAppCheck())
-              || (request.resource.data.source == 'cleaning-booking' && hasValidAppCheck())
-              || (request.resource.data.source == 'inventory-export' && hasValidAppCheck())
+              request.resource.data.source in ['contact-form', 'cleaning-booking', 'inventory-export']
               || (request.resource.data.source == 'rental-application' && isAuthenticated())
             )
           )
