@@ -1,4 +1,4 @@
-import { Boxes, Plus } from 'lucide-react';
+import { Boxes, LayoutDashboard, Package, Plus, Ship, ShieldAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
@@ -9,8 +9,11 @@ import { BRAND_NAME } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 const links = [
-  { to: '/inventory-app', label: 'Catalog', end: true },
-  { to: '/inventory-app/items/new', label: 'New SKU', end: false, icon: Plus },
+  { to: '/inventory-app', label: 'Dashboard', end: true, icon: LayoutDashboard },
+  { to: '/inventory-app/products', label: 'Products', end: false, icon: Package },
+  { to: '/inventory-app/asn', label: 'ASN', end: false, icon: Ship },
+  { to: '/inventory-app/claims', label: 'Claims', end: false, icon: ShieldAlert },
+  { to: '/inventory-app/products/items/new', label: 'New SKU', end: false, icon: Plus },
 ];
 
 function navClassName({ isActive }: { isActive: boolean }): string {
@@ -49,11 +52,11 @@ export function InventoryNavbar() {
           <span className="hidden h-6 w-px bg-line sm:block" aria-hidden="true" />
           <p className="hidden items-center gap-2 font-display text-[11px] tracking-[0.2em] text-ink-muted uppercase sm:flex">
             <Boxes className="size-3.5 text-[color:var(--inv-scan)]" aria-hidden="true" />
-            WMS // 01
+            Dang Lifestyle Operations
           </p>
         </div>
 
-        <nav aria-label="Inventory app" className="flex min-w-0 flex-1 items-center justify-end gap-1">
+        <nav aria-label="Operations hub" className="flex min-w-0 flex-1 items-center justify-end gap-1">
           <div className="flex min-w-0 items-center justify-end gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {links.map((link) => (
               <NavLink key={link.to} to={link.to} end={link.end} className={navClassName}>
@@ -80,8 +83,8 @@ export function InventoryNavbar() {
 
 export function InventoryLayout() {
   usePageMeta({
-    title: `Inventory WMS — ${BRAND_NAME}`,
-    description: `${BRAND_NAME} warehouse inventory catalog demo.`,
+    title: `Dang Lifestyle Operations — ${BRAND_NAME}`,
+    description: `${BRAND_NAME} operations hub for barcodes, ASNs, damage claims, and refunds.`,
     robots: 'noindex, nofollow',
   });
 

@@ -33,10 +33,18 @@ service cloud.firestore {
     // Collection: inventoryItems
     // Document ID: itemId (inv-{uuid})
     // Fields:
-    //   - id, name, sku, stock, weightKg, barcodeValue, photoUrl (Firebase Storage URL), createdAt, updatedAt
+    //   - id, name, sku, stock, weightKg, barcode, barcodeStatus, shopifySyncStatus, barcodeValue
+    //   - photoUrl (Firebase Storage URL), createdAt, updatedAt
+    //   - shopifyVariantId: optional demo string
     //   - dimensions: map { lengthCm, widthCm, heightCm }
     //   - cartonDimensions: map { lengthCm, widthCm, heightCm }
     //   - cartonWeightKg: number
+    //
+    // Collection: asns
+    // Document ID: asnId (asn-{uuid})
+    //
+    // Collection: damageClaims
+    // Document ID: claimId (claim-{uuid})
     //
     // Collection: leads
     // Document ID: leadId (ld-{uuid})
@@ -295,7 +303,7 @@ service cloud.firestore {
     }
 
     function isValidInventoryItem(data) {
-      return hasOnlyAllowedFields(['id', 'name', 'sku', 'stock', 'weightKg', 'dimensions', 'cartonWeightKg', 'cartonDimensions', 'photoUrl', 'barcodeValue', 'createdAt', 'updatedAt'])
+      return hasOnlyAllowedFields(['id', 'name', 'sku', 'stock', 'weightKg', 'dimensions', 'cartonWeightKg', 'cartonDimensions', 'photoUrl', 'barcode', 'barcodeStatus', 'shopifySyncStatus', 'shopifyVariantId', 'barcodeValue', 'createdAt', 'updatedAt'])
         && data.id is string
         && data.id.size() >= 8
         && data.id.size() <= 40
@@ -318,9 +326,185 @@ service cloud.firestore {
         && isValidInventoryDimensions(data.cartonDimensions)
         && data.photoUrl is string
         && data.photoUrl.size() <= 4096
+        && data.barcode is string
+        && data.barcode.size() <= 40
+        && data.barcodeStatus in ['ready', 'missing', 'verified']
+        && data.shopifySyncStatus in ['synced', 'pending', 'error', 'not_linked']
+        && (!('shopifyVariantId' in data) || (data.shopifyVariantId is string && data.shopifyVariantId.size() <= 80))
         && data.barcodeValue is string
         && data.barcodeValue.size() >= 1
         && data.barcodeValue.size() <= 40
+        && data.createdAt is string
+        && data.createdAt.size() >= 20
+        && data.createdAt.size() <= 40
+        && data.updatedAt is string
+        && data.updatedAt.size() >= 20
+        && data.updatedAt.size() <= 40;
+    }
+
+    function isValidAsnLineItem(item) {
+      return item is map
+        && item.keys().hasOnly(['productId', 'sku', 'barcode', 'productName', 'quantity', 'cartonWeightKg', 'cartonDimensions'])
+        && item.productId is string
+        && item.productId.size() >= 8
+        && item.productId.size() <= 40
+        && item.sku is string
+        && item.sku.size() <= 40
+        && item.barcode is string
+        && item.barcode.size() <= 40
+        && item.productName is string
+        && item.productName.size() <= 120
+        && item.quantity is number
+        && item.quantity >= 0
+        && item.quantity <= 100000
+        && item.cartonWeightKg is number
+        && item.cartonWeightKg >= 0
+        && item.cartonWeightKg <= 100000
+        && isValidInventoryDimensions(item.cartonDimensions);
+    }
+
+    function isValidAsnLineItems(list) {
+      return list is list
+        && list.size() <= 200
+        && (list.size() < 1 || isValidAsnLineItem(list[0]))
+        && (list.size() < 2 || isValidAsnLineItem(list[1]))
+        && (list.size() < 3 || isValidAsnLineItem(list[2]))
+        && (list.size() < 4 || isValidAsnLineItem(list[3]))
+        && (list.size() < 5 || isValidAsnLineItem(list[4]))
+        && (list.size() < 6 || isValidAsnLineItem(list[5]))
+        && (list.size() < 7 || isValidAsnLineItem(list[6]))
+        && (list.size() < 8 || isValidAsnLineItem(list[7]))
+        && (list.size() < 9 || isValidAsnLineItem(list[8]))
+        && (list.size() < 10 || isValidAsnLineItem(list[9]));
+    }
+
+    function isValidValidationIssue(item) {
+      return item is map
+        && item.keys().hasOnly(['severity', 'code', 'message', 'productId'])
+        && item.severity in ['error', 'warning']
+        && item.code is string
+        && item.code.size() >= 1
+        && item.code.size() <= 40
+        && item.message is string
+        && item.message.size() >= 1
+        && item.message.size() <= 200
+        && (!('productId' in item) || (item.productId is string && item.productId.size() <= 40));
+    }
+
+    function isValidValidationIssues(list) {
+      return list is list
+        && list.size() <= 50
+        && (list.size() < 1 || isValidValidationIssue(list[0]))
+        && (list.size() < 2 || isValidValidationIssue(list[1]))
+        && (list.size() < 3 || isValidValidationIssue(list[2]))
+        && (list.size() < 4 || isValidValidationIssue(list[3]))
+        && (list.size() < 5 || isValidValidationIssue(list[4]))
+        && (list.size() < 6 || isValidValidationIssue(list[5]))
+        && (list.size() < 7 || isValidValidationIssue(list[6]))
+        && (list.size() < 8 || isValidValidationIssue(list[7]))
+        && (list.size() < 9 || isValidValidationIssue(list[8]))
+        && (list.size() < 10 || isValidValidationIssue(list[9]));
+    }
+
+    function isValidAsn(data) {
+      return hasOnlyAllowedFields(['id', 'warehouse', 'shipmentDate', 'poReference', 'carrier', 'trackingReference', 'expectedArrival', 'status', 'lineItems', 'validationIssues', 'generatedFileName', 'createdAt', 'updatedAt'])
+        && data.id is string
+        && data.id.size() >= 8
+        && data.id.size() <= 40
+        && data.warehouse is string
+        && data.warehouse.size() >= 1
+        && data.warehouse.size() <= 80
+        && data.shipmentDate is string
+        && data.shipmentDate.size() >= 8
+        && data.shipmentDate.size() <= 20
+        && data.poReference is string
+        && data.poReference.size() <= 40
+        && data.carrier is string
+        && data.carrier.size() <= 40
+        && data.trackingReference is string
+        && data.trackingReference.size() <= 60
+        && data.expectedArrival is string
+        && data.expectedArrival.size() >= 8
+        && data.expectedArrival.size() <= 20
+        && data.status in ['draft', 'validated', 'generated', 'submitted']
+        && isValidAsnLineItems(data.lineItems)
+        && isValidValidationIssues(data.validationIssues)
+        && (!('generatedFileName' in data) || (data.generatedFileName is string && data.generatedFileName.size() <= 80))
+        && data.createdAt is string
+        && data.createdAt.size() >= 20
+        && data.createdAt.size() <= 40
+        && data.updatedAt is string
+        && data.updatedAt.size() >= 20
+        && data.updatedAt.size() <= 40;
+    }
+
+    function isValidClaimEvidence(item) {
+      return item is map
+        && item.keys().hasOnly(['id', 'label', 'url'])
+        && item.id is string
+        && item.id.size() >= 1
+        && item.id.size() <= 40
+        && item.label is string
+        && item.label.size() >= 1
+        && item.label.size() <= 80
+        && item.url is string
+        && item.url.size() >= 1
+        && item.url.size() <= 4096;
+    }
+
+    function isValidClaimEvidenceList(list) {
+      return list is list
+        && list.size() <= 10
+        && (list.size() < 1 || isValidClaimEvidence(list[0]))
+        && (list.size() < 2 || isValidClaimEvidence(list[1]))
+        && (list.size() < 3 || isValidClaimEvidence(list[2]))
+        && (list.size() < 4 || isValidClaimEvidence(list[3]))
+        && (list.size() < 5 || isValidClaimEvidence(list[4]));
+    }
+
+    function isValidClaimRefund(refund) {
+      return refund is map
+        && refund.keys().hasOnly(['customerRefund', 'shippingRefund', 'shopifyRefundStatus', 'claimRefundStatus', 'customerNotified'])
+        && refund.customerRefund is number
+        && refund.customerRefund >= 0
+        && refund.customerRefund <= 100000
+        && refund.shippingRefund is number
+        && refund.shippingRefund >= 0
+        && refund.shippingRefund <= 10000
+        && refund.shopifyRefundStatus in ['pending', 'completed']
+        && refund.claimRefundStatus in ['pending', 'completed']
+        && refund.customerNotified is bool;
+    }
+
+    function isValidDamageClaim(data) {
+      return hasOnlyAllowedFields(['id', 'displayId', 'orderNumber', 'customerName', 'productId', 'productName', 'quantity', 'issueType', 'status', 'responsibility', 'resolution', 'evidence', 'refund', 'createdAt', 'updatedAt'])
+        && data.id is string
+        && data.id.size() >= 8
+        && data.id.size() <= 40
+        && data.displayId is string
+        && data.displayId.size() >= 4
+        && data.displayId.size() <= 20
+        && data.orderNumber is string
+        && data.orderNumber.size() >= 1
+        && data.orderNumber.size() <= 40
+        && data.customerName is string
+        && data.customerName.size() >= 1
+        && data.customerName.size() <= 80
+        && data.productId is string
+        && data.productId.size() >= 8
+        && data.productId.size() <= 40
+        && data.productName is string
+        && data.productName.size() >= 1
+        && data.productName.size() <= 120
+        && data.quantity is number
+        && data.quantity >= 1
+        && data.quantity <= 1000
+        && data.issueType in ['damaged', 'missing', 'wrong_item']
+        && data.status in ['new', 'investigating', 'waiting_3pl', 'approved', 'refunded', 'closed']
+        && data.responsibility in ['customer', 'carrier', '3pl', 'warehouse', 'unknown']
+        && (data.resolution == null || data.resolution in ['refund', 'replacement', 'store_credit', 'reject'])
+        && isValidClaimEvidenceList(data.evidence)
+        && isValidClaimRefund(data.refund)
         && data.createdAt is string
         && data.createdAt.size() >= 20
         && data.createdAt.size() <= 40
@@ -504,6 +688,32 @@ service cloud.firestore {
 
       allow update: if isValidInventoryItem(request.resource.data)
         && request.resource.data.id == itemId
+        && areImmutableFieldsUnchanged(['id', 'createdAt']);
+
+      allow delete: if true;
+    }
+
+    match /asns/{asnId} {
+      allow read: if true;
+
+      allow create: if isValidAsn(request.resource.data)
+        && request.resource.data.id == asnId;
+
+      allow update: if isValidAsn(request.resource.data)
+        && request.resource.data.id == asnId
+        && areImmutableFieldsUnchanged(['id', 'createdAt']);
+
+      allow delete: if true;
+    }
+
+    match /damageClaims/{claimId} {
+      allow read: if true;
+
+      allow create: if isValidDamageClaim(request.resource.data)
+        && request.resource.data.id == claimId;
+
+      allow update: if isValidDamageClaim(request.resource.data)
+        && request.resource.data.id == claimId
         && areImmutableFieldsUnchanged(['id', 'createdAt']);
 
       allow delete: if true;

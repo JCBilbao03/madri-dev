@@ -28,8 +28,9 @@ export const ADMIN_APPS: AdminApp[] = [
   },
   {
     id: 'inventory',
-    name: 'Inventory app',
-    description: 'Firestore-backed SKU catalog with photos, barcode labels, and CSV/Excel export.',
+    name: 'Dang Lifestyle Operations',
+    description:
+      'Operations hub for barcodes, ASN builder, damage claims, and refund tracking — demo/simulated Shopify and 3PL.',
     href: '/inventory-app',
   },
 ];

@@ -14,10 +14,14 @@ import { AdminAppsPage } from '@/pages/admin/AdminAppsPage';
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
 import { AdminLeadsPage } from '@/pages/admin/AdminLeadsPage';
 import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
+import { AsnBuilderPage } from '@/pages/AsnBuilderPage';
+import { AsnListPage } from '@/pages/AsnListPage';
+import { ClaimDetailPage } from '@/pages/ClaimDetailPage';
+import { ClaimFormPage } from '@/pages/ClaimFormPage';
+import { ClaimListPage } from '@/pages/ClaimListPage';
 import { CleanerProfilePage } from '@/pages/CleanerProfilePage';
 import { CleaningDashboardPage } from '@/pages/CleaningDashboardPage';
 import { CleaningSearchPage } from '@/pages/CleaningSearchPage';
-import { InventoryCatalogPage } from '@/pages/InventoryCatalogPage';
 import { InventoryFormPage } from '@/pages/InventoryFormPage';
 import { InventoryItemPage } from '@/pages/InventoryItemPage';
 import { InventoryLabelsPage } from '@/pages/InventoryLabelsPage';
@@ -26,6 +30,8 @@ import { LandlordDashboard } from '@/pages/LandlordDashboard';
 import { ListingQuestionsPage } from '@/pages/ListingQuestionsPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { MyApplicationsPage } from '@/pages/MyApplicationsPage';
+import { OperationsDashboardPage } from '@/pages/OperationsDashboardPage';
+import { ProductBarcodePage } from '@/pages/ProductBarcodePage';
 import { PropertyDetailPage } from '@/pages/PropertyDetailPage';
 import { SavedListingsPage } from '@/pages/SavedListingsPage';
 import { SignupPage } from '@/pages/SignupPage';
@@ -73,7 +79,19 @@ export function App() {
           <Route path="dashboard" element={<CleaningDashboardPage />} />
         </Route>
         <Route path="/inventory-app" element={<InventoryLayout />}>
-          <Route index element={<InventoryCatalogPage />} />
+          <Route index element={<OperationsDashboardPage />} />
+          <Route path="products" element={<ProductBarcodePage />} />
+          <Route path="products/items/new" element={<InventoryFormPage />} />
+          <Route path="products/items/:itemId" element={<InventoryItemPage />} />
+          <Route path="products/items/:itemId/edit" element={<InventoryFormPage />} />
+          <Route path="products/labels" element={<InventoryLabelsPage />} />
+          <Route path="asn" element={<AsnListPage />} />
+          <Route path="asn/new" element={<AsnBuilderPage />} />
+          <Route path="asn/:asnId" element={<AsnBuilderPage />} />
+          <Route path="claims" element={<ClaimListPage />} />
+          <Route path="claims/new" element={<ClaimFormPage />} />
+          <Route path="claims/:claimId" element={<ClaimDetailPage />} />
+          {/* Legacy routes — redirect paths */}
           <Route path="items/new" element={<InventoryFormPage />} />
           <Route path="items/:itemId" element={<InventoryItemPage />} />
           <Route path="items/:itemId/edit" element={<InventoryFormPage />} />

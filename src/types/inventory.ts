@@ -4,6 +4,10 @@ export interface Dimensions {
   heightCm: number;
 }
 
+export type BarcodeStatus = 'ready' | 'missing' | 'verified';
+
+export type ShopifySyncStatus = 'synced' | 'pending' | 'error' | 'not_linked';
+
 export interface InventoryItem {
   id: string;
   name: string;
@@ -14,6 +18,10 @@ export interface InventoryItem {
   cartonWeightKg: number;
   cartonDimensions: Dimensions;
   photoUrl: string;
+  barcode: string;
+  barcodeStatus: BarcodeStatus;
+  shopifySyncStatus: ShopifySyncStatus;
+  shopifyVariantId?: string;
   barcodeValue: string;
   createdAt: string;
   updatedAt: string;
@@ -28,6 +36,10 @@ export interface InventoryItemInput {
   cartonWeightKg: number;
   cartonDimensions: Dimensions;
   photoUrl: string;
+  barcode?: string;
+  barcodeStatus?: BarcodeStatus;
+  shopifySyncStatus?: ShopifySyncStatus;
+  shopifyVariantId?: string;
 }
 
 export const EMPTY_DIMENSIONS: Dimensions = {
@@ -60,6 +72,28 @@ function isDimensions(value: unknown): value is Dimensions {
   );
 }
 
+function deriveBarcodeStatus(barcode: string, explicit?: unknown): BarcodeStatus {
+  if (explicit === 'ready' || explicit === 'missing' || explicit === 'verified') {
+    return explicit;
+  }
+  return barcode.trim() ? 'ready' : 'missing';
+}
+
+function deriveShopifySyncStatus(value: unknown): ShopifySyncStatus {
+  if (value === 'synced' || value === 'pending' || value === 'error' || value === 'not_linked') {
+    return value;
+  }
+  return 'not_linked';
+}
+
+export function deriveBarcodeValue(barcode: string, sku: string): string {
+  const trimmed = barcode.trim();
+  if (trimmed) {
+    return trimmed;
+  }
+  return sku.trim().toUpperCase();
+}
+
 export function asInventoryItem(value: unknown): InventoryItem | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return null;
@@ -84,6 +118,13 @@ export function asInventoryItem(value: unknown): InventoryItem | null {
     return null;
   }
 
+  const barcode =
+    typeof item.barcode === 'string'
+      ? item.barcode
+      : item.barcodeValue !== item.sku.trim().toUpperCase()
+        ? item.barcodeValue
+        : '';
+
   return {
     id: item.id,
     name: item.name,
@@ -99,6 +140,10 @@ export function asInventoryItem(value: unknown): InventoryItem | null {
         : typeof (item as Record<string, unknown>).photoDataUrl === 'string'
           ? ((item as Record<string, unknown>).photoDataUrl as string)
           : '',
+    barcode,
+    barcodeStatus: deriveBarcodeStatus(barcode, item.barcodeStatus),
+    shopifySyncStatus: deriveShopifySyncStatus(item.shopifySyncStatus),
+    shopifyVariantId: typeof item.shopifyVariantId === 'string' ? item.shopifyVariantId : undefined,
     barcodeValue: item.barcodeValue,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,

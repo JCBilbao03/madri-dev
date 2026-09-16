@@ -9,10 +9,30 @@ import {
 import { deleteObject, getDownloadURL, listAll, ref, uploadBytes } from 'firebase/storage';
 
 import { db, storage } from '@/lib/firebase';
-import { asInventoryItem, type InventoryItem, type InventoryItemInput } from '@/types/inventory';
+import {
+  asInventoryItem,
+  deriveBarcodeValue,
+  type BarcodeStatus,
+  type InventoryItem,
+  type InventoryItemInput,
+  type ShopifySyncStatus,
+} from '@/types/inventory';
 
-function createBarcodeValue(sku: string): string {
-  return sku.trim().toUpperCase();
+function deriveBarcodeFields(
+  sku: string,
+  input: InventoryItemInput,
+  existing?: InventoryItem,
+): { barcode: string; barcodeStatus: BarcodeStatus; barcodeValue: string } {
+  const barcode = (input.barcode ?? existing?.barcode ?? '').trim();
+  const barcodeStatus =
+    input.barcodeStatus ??
+    (barcode ? (existing?.barcodeStatus === 'verified' ? 'verified' : 'ready') : 'missing');
+
+  return {
+    barcode,
+    barcodeStatus,
+    barcodeValue: deriveBarcodeValue(barcode, sku),
+  };
 }
 
 function buildItemDocument(
@@ -23,6 +43,9 @@ function buildItemDocument(
 ): InventoryItem {
   const now = new Date().toISOString();
   const sku = input.sku.trim();
+  const barcodeFields = deriveBarcodeFields(sku, input, existing);
+  const shopifySyncStatus: ShopifySyncStatus =
+    input.shopifySyncStatus ?? existing?.shopifySyncStatus ?? 'not_linked';
 
   return {
     id,
@@ -34,7 +57,9 @@ function buildItemDocument(
     cartonWeightKg: Math.max(0, input.cartonWeightKg),
     cartonDimensions: { ...input.cartonDimensions },
     photoUrl,
-    barcodeValue: createBarcodeValue(sku),
+    ...barcodeFields,
+    shopifySyncStatus,
+    shopifyVariantId: input.shopifyVariantId ?? existing?.shopifyVariantId,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   };
@@ -161,6 +186,38 @@ export async function updateInventoryItem(
   return item;
 }
 
+export async function patchInventoryItem(
+  itemId: string,
+  patch: Partial<
+    Pick<
+      InventoryItem,
+      | 'barcode'
+      | 'barcodeStatus'
+      | 'barcodeValue'
+      | 'shopifySyncStatus'
+      | 'shopifyVariantId'
+    >
+  >,
+  existing?: InventoryItem,
+): Promise<InventoryItem> {
+  const current = existing ?? (await fetchInventoryItem(itemId));
+  if (!current) {
+    throw new Error('Product not found.');
+  }
+
+  const barcode = patch.barcode ?? current.barcode;
+  const item: InventoryItem = {
+    ...current,
+    ...patch,
+    barcode,
+    barcodeValue: patch.barcodeValue ?? deriveBarcodeValue(barcode, current.sku),
+    updatedAt: new Date().toISOString(),
+  };
+
+  await setDoc(doc(db, 'inventoryItems', itemId), item);
+  return item;
+}
+
 export async function deleteInventoryItem(itemId: string): Promise<void> {
   await deleteInventoryPhotos(itemId);
   await deleteDoc(doc(db, 'inventoryItems', itemId));
@@ -177,5 +234,9 @@ export async function migrateLegacyInventoryItem(legacy: InventoryItem): Promise
     cartonWeightKg: legacy.cartonWeightKg,
     cartonDimensions: legacy.cartonDimensions,
     photoUrl: legacy.photoUrl,
+    barcode: legacy.barcode,
+    barcodeStatus: legacy.barcodeStatus,
+    shopifySyncStatus: legacy.shopifySyncStatus,
+    shopifyVariantId: legacy.shopifyVariantId,
   });
 }

@@ -28,6 +28,10 @@ function toInput(item: InventoryItem): InventoryItemInput {
     cartonWeightKg: item.cartonWeightKg,
     cartonDimensions: { ...item.cartonDimensions },
     photoUrl: item.photoUrl,
+    barcode: item.barcode,
+    barcodeStatus: item.barcodeStatus,
+    shopifySyncStatus: item.shopifySyncStatus,
+    shopifyVariantId: item.shopifyVariantId,
   };
 }
 
@@ -76,14 +80,14 @@ export function InventoryForm({ item }: InventoryFormProps) {
           const updated = await updateItem(item.id, form, photoFile);
           if (updated) {
             setSavedItem(updated);
-            navigate(`/inventory-app/items/${updated.id}`);
+            navigate(`/inventory-app/products/items/${updated.id}`);
           }
           return;
         }
 
         const created = await addItem(form, photoFile);
         setSavedItem(created);
-        navigate(`/inventory-app/items/${created.id}`);
+        navigate(`/inventory-app/products/items/${created.id}`);
       } catch {
         // Store surfaces the error message.
       }
@@ -91,7 +95,7 @@ export function InventoryForm({ item }: InventoryFormProps) {
     [addItem, form, item, navigate, photoFile, updateItem],
   );
 
-  const previewBarcode = form.sku.trim().toUpperCase();
+  const previewBarcode = form.barcode?.trim() || form.sku.trim().toUpperCase();
   const displayError = error || storeError;
 
   return (
@@ -114,7 +118,15 @@ export function InventoryForm({ item }: InventoryFormProps) {
               name="sku"
               value={form.sku}
               onChange={(event) => updateField('sku', event.target.value)}
-              placeholder="SKU-10042"
+              placeholder="DL-A001"
+            />
+            <InventoryField
+              label="Barcode (EAN/UPC)"
+              name="barcode"
+              value={form.barcode ?? ''}
+              onChange={(event) => updateField('barcode', event.target.value)}
+              placeholder="8901234567890"
+              hint="Leave empty if barcode is not yet assigned."
             />
             <InventoryField
               label="Stock on hand"
@@ -183,7 +195,7 @@ export function InventoryForm({ item }: InventoryFormProps) {
               <Button type="submit" variant="primary" disabled={isSaving}>
                 {isSaving ? 'Uplinking…' : item ? 'Commit changes' : 'Commit & generate codes'}
               </Button>
-              <Button type="button" variant="secondary" onClick={() => navigate('/inventory-app')}>
+              <Button type="button" variant="secondary" onClick={() => navigate('/inventory-app/products')}>
                 Abort
               </Button>
             </div>

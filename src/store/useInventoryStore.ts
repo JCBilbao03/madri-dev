@@ -5,9 +5,11 @@ import {
   deleteInventoryItem,
   fetchInventoryItems,
   migrateLegacyInventoryItem,
+  patchInventoryItem,
   updateInventoryItem,
 } from '@/lib/inventoryData';
-import { asInventoryItem, type InventoryItem, type InventoryItemInput } from '@/types/inventory';
+import { generateDemoEan, simulateShopifySyncDelay } from '@/lib/simulatedAction';
+import { deriveBarcodeValue, asInventoryItem, type InventoryItem, type InventoryItemInput } from '@/types/inventory';
 
 const LEGACY_STORAGE_KEY = 'madribuild-inventory-items';
 
@@ -73,6 +75,9 @@ interface InventoryState {
   addItem: (input: InventoryItemInput, photoFile?: File | null) => Promise<InventoryItem>;
   updateItem: (id: string, input: InventoryItemInput, photoFile?: File | null) => Promise<InventoryItem | null>;
   deleteItem: (id: string) => Promise<void>;
+  generateBarcode: (id: string) => Promise<InventoryItem | null>;
+  markVerified: (id: string) => Promise<InventoryItem | null>;
+  simulateShopifySync: (id: string) => Promise<InventoryItem | null>;
   toggleSelected: (id: string) => void;
   selectAll: (ids: string[]) => void;
   clearSelection: () => void;
@@ -168,6 +173,95 @@ export const useInventoryStore = create<InventoryState>()((set, get) => ({
         isSaving: false,
         error: formatInventoryError(error),
       });
+    }
+  },
+
+  generateBarcode: async (id) => {
+    set({ isSaving: true, error: '' });
+    try {
+      const existing = get().items.find((entry) => entry.id === id);
+      if (!existing) {
+        throw new Error('Product not found.');
+      }
+
+      const barcode = generateDemoEan();
+      const item = await patchInventoryItem(
+        id,
+        {
+          barcode,
+          barcodeStatus: 'ready',
+          barcodeValue: deriveBarcodeValue(barcode, existing.sku),
+        },
+        existing,
+      );
+
+      set((state) => ({
+        items: state.items.map((entry) => (entry.id === id ? item : entry)),
+        isSaving: false,
+      }));
+      return item;
+    } catch (error) {
+      set({ isSaving: false, error: formatInventoryError(error) });
+      return null;
+    }
+  },
+
+  markVerified: async (id) => {
+    set({ isSaving: true, error: '' });
+    try {
+      const existing = get().items.find((entry) => entry.id === id);
+      if (!existing) {
+        throw new Error('Product not found.');
+      }
+
+      if (!existing.barcode.trim()) {
+        throw new Error('Assign a barcode before marking as verified.');
+      }
+
+      const item = await patchInventoryItem(id, { barcodeStatus: 'verified' }, existing);
+      set((state) => ({
+        items: state.items.map((entry) => (entry.id === id ? item : entry)),
+        isSaving: false,
+      }));
+      return item;
+    } catch (error) {
+      set({ isSaving: false, error: formatInventoryError(error) });
+      return null;
+    }
+  },
+
+  simulateShopifySync: async (id) => {
+    set({ isSaving: true, error: '' });
+    try {
+      const existing = get().items.find((entry) => entry.id === id);
+      if (!existing) {
+        throw new Error('Product not found.');
+      }
+
+      let item = await patchInventoryItem(
+        id,
+        {
+          shopifySyncStatus: 'pending',
+          shopifyVariantId: existing.shopifyVariantId ?? `gid://shopify/ProductVariant/${Math.floor(Math.random() * 900000 + 100000)}`,
+        },
+        existing,
+      );
+
+      set((state) => ({
+        items: state.items.map((entry) => (entry.id === id ? item : entry)),
+      }));
+
+      await simulateShopifySyncDelay();
+
+      item = await patchInventoryItem(id, { shopifySyncStatus: 'synced' }, item);
+      set((state) => ({
+        items: state.items.map((entry) => (entry.id === id ? item : entry)),
+        isSaving: false,
+      }));
+      return item;
+    } catch (error) {
+      set({ isSaving: false, error: formatInventoryError(error) });
+      return null;
     }
   },
 

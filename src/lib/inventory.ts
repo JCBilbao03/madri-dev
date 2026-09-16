@@ -16,6 +16,7 @@ export function filterInventoryItems(items: InventoryItem[], query: string): Inv
     (item) =>
       item.name.toLowerCase().includes(normalized) ||
       item.sku.toLowerCase().includes(normalized) ||
+      item.barcode.toLowerCase().includes(normalized) ||
       item.barcodeValue.toLowerCase().includes(normalized),
   );
 }
@@ -126,5 +127,5 @@ export function inventorySummary(item: InventoryItem): string {
 
 export function buildLabelSheetUrl(itemIds: string[]): string {
   const params = new URLSearchParams({ ids: itemIds.join(',') });
-  return `/inventory-app/labels?${params.toString()}`;
+  return `/inventory-app/products/labels?${params.toString()}`;
 }

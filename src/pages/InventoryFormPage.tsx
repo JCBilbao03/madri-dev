@@ -22,7 +22,7 @@ export function InventoryFormPage() {
   const item = itemId ? items.find((entry) => entry.id === itemId) : undefined;
 
   if (isEdit && !isLoading && !item) {
-    return <Navigate to="/inventory-app" replace />;
+    return <Navigate to="/inventory-app/products" replace />;
   }
 
   if (isEdit && !item) {
