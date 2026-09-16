@@ -28,10 +28,10 @@ export async function simulateAsnSubmitDelay(): Promise<SimulatedActionResult> {
 }
 
 export function generateDemoEan(): string {
-  const suffix = Math.floor(Math.random() * 1_000_000_000)
+  const suffix = Math.floor(Math.random() * 100_000_000_000)
     .toString()
-    .padStart(9, '0');
-  return `890${suffix}`;
+    .padStart(11, '0');
+  return `0${suffix}`;
 }
 
 export function build3plRequestSummary(params: {

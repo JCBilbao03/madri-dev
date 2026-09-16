@@ -268,9 +268,9 @@ export function asDamageClaim(value: unknown): DamageClaim | null {
 }
 
 export const DEMO_WAREHOUSES = [
-  'Singapore — Tuas Hub',
-  'Manila — Pasig FC',
-  'Jakarta — Bekasi DC',
+  'Dallas, TX — Fulfillment Center',
+  'Reno, NV — West Coast DC',
+  'Allentown, PA — East Coast Hub',
 ] as const;
 
 export const CLAIM_STATUS_LABELS: Record<ClaimStatus, string> = {

@@ -115,7 +115,7 @@ export function ClaimFormPage() {
             name="customerName"
             value={form.customerName}
             onChange={(event) => setForm((current) => ({ ...current, customerName: event.target.value }))}
-            placeholder="Priya Sharma"
+            placeholder="Jane Smith"
           />
           <label className="block space-y-2">
             <span className="font-display text-[11px] tracking-[0.16em] text-ink-muted uppercase">Product</span>

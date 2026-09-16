@@ -125,7 +125,7 @@ export function InventoryForm({ item }: InventoryFormProps) {
               name="barcode"
               value={form.barcode ?? ''}
               onChange={(event) => updateField('barcode', event.target.value)}
-              placeholder="8901234567890"
+              placeholder="012345678905"
               hint="Leave empty if barcode is not yet assigned."
             />
             <InventoryField
