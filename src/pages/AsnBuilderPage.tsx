@@ -13,7 +13,13 @@ import { Button } from '@/components/ui/Button';
 import { filterInventoryItems } from '@/lib/inventory';
 import { useAsnStore } from '@/store/useAsnStore';
 import { useInventoryStore } from '@/store/useInventoryStore';
-import { DEMO_WAREHOUSES, ASN_STATUS_LABELS, type AsnInput, type AsnLineItem } from '@/types/operations';
+import {
+  DEMO_CARRIERS,
+  DEMO_WAREHOUSES,
+  ASN_STATUS_LABELS,
+  type AsnInput,
+  type AsnLineItem,
+} from '@/types/operations';
 import type { InventoryItem } from '@/types/inventory';
 
 const EMPTY_ASN: AsnInput = {
@@ -280,19 +286,30 @@ export function AsnBuilderPage() {
               placeholder="PO-DL-2026-001"
             />
             <div className="grid gap-4 sm:grid-cols-2">
-              <InventoryField
-                label="Carrier"
-                name="carrier"
-                value={form.carrier}
-                onChange={(event) => updateField('carrier', event.target.value)}
-                placeholder="DHL Freight"
-              />
+              <label className="block space-y-2">
+                <span className="font-display text-[11px] tracking-[0.16em] text-ink-muted uppercase">
+                  Carrier
+                </span>
+                <select
+                  name="carrier"
+                  value={form.carrier}
+                  onChange={(event) => updateField('carrier', event.target.value)}
+                  className="inventory-input"
+                >
+                  <option value="">Select carrier…</option>
+                  {DEMO_CARRIERS.map((carrier) => (
+                    <option key={carrier} value={carrier}>
+                      {carrier}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <InventoryField
                 label="Tracking reference"
                 name="trackingReference"
                 value={form.trackingReference}
                 onChange={(event) => updateField('trackingReference', event.target.value)}
-                placeholder="JD0123456789"
+                placeholder="1Z999AA10123456784"
               />
             </div>
           </InventoryPanel>

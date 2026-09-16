@@ -33,6 +33,7 @@ import { MyApplicationsPage } from '@/pages/MyApplicationsPage';
 import { OperationsDashboardPage } from '@/pages/OperationsDashboardPage';
 import { ProductBarcodePage } from '@/pages/ProductBarcodePage';
 import { PropertyDetailPage } from '@/pages/PropertyDetailPage';
+import { TasksPage } from '@/pages/TasksPage';
 import { SavedListingsPage } from '@/pages/SavedListingsPage';
 import { SignupPage } from '@/pages/SignupPage';
 import { TenantFeed } from '@/pages/TenantFeed';
@@ -91,6 +92,7 @@ export function App() {
           <Route path="claims" element={<ClaimListPage />} />
           <Route path="claims/new" element={<ClaimFormPage />} />
           <Route path="claims/:claimId" element={<ClaimDetailPage />} />
+          <Route path="tasks" element={<TasksPage />} />
           {/* Legacy routes — redirect paths */}
           <Route path="items/new" element={<InventoryFormPage />} />
           <Route path="items/:itemId" element={<InventoryItemPage />} />

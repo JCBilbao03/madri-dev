@@ -291,7 +291,7 @@ const ASNS = [
     warehouse: 'Dallas, TX — Fulfillment Center',
     shipmentDate: '2026-09-20',
     poReference: 'PO-DL-2026-042',
-    carrier: 'UPS Freight',
+    carrier: 'UPS',
     trackingReference: '1Z999AA10123456784',
     expectedArrival: '2026-09-28',
     status: 'validated',
@@ -331,7 +331,7 @@ const ASNS = [
     warehouse: 'Allentown, PA — East Coast Hub',
     shipmentDate: '2026-09-15',
     poReference: 'PO-DL-2026-038',
-    carrier: 'FedEx Freight',
+    carrier: 'FedEx',
     trackingReference: '794612345678',
     expectedArrival: '2026-09-22',
     status: 'submitted',
@@ -534,6 +534,103 @@ const CLAIMS = [
   },
 ];
 
+function offsetDate(days) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+const TASKS = [
+  {
+    id: 'task-dl-001',
+    title: 'Fix 7 missing product barcodes',
+    description: 'Generate and verify barcodes before the next ASN shipment.',
+    completed: false,
+    priority: 1,
+    dueDate: offsetDate(0),
+    project: 'barcodes',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'task-dl-002',
+    title: 'Complete draft ASN PO-DL-DRAFT',
+    description: 'Add warehouse, carrier, and remaining line items.',
+    completed: false,
+    priority: 2,
+    dueDate: offsetDate(0),
+    project: 'asn',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'task-dl-003',
+    title: 'Follow up on 3PL for claim DL-1026',
+    description: 'Waiting on packaging investigation response.',
+    completed: false,
+    priority: 2,
+    dueDate: offsetDate(-1),
+    project: 'claims',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'task-dl-004',
+    title: 'Process Shopify refunds for DL-1031 and DL-1032',
+    description: 'Both claims approved — refunds still pending in Shopify.',
+    completed: false,
+    priority: 1,
+    dueDate: offsetDate(0),
+    project: 'refunds',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'task-dl-005',
+    title: 'Validate ASN PO-DL-2026-042 line items',
+    description: 'Confirm Hand Towel Set barcode verification status.',
+    completed: false,
+    priority: 3,
+    dueDate: offsetDate(2),
+    project: 'asn',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'task-dl-006',
+    title: 'Sync verified SKUs to Shopify',
+    description: 'Push Cedarwood & Sage and Bamboo Serving Tray updates.',
+    completed: false,
+    priority: 3,
+    dueDate: offsetDate(3),
+    project: 'barcodes',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'task-dl-007',
+    title: 'Review open damage claims summary',
+    description: 'Weekly ops review with fulfillment team.',
+    completed: false,
+    priority: 4,
+    dueDate: offsetDate(5),
+    project: 'claims',
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: 'task-dl-008',
+    title: 'Archive closed claim DL-1033 documentation',
+    description: 'Refund completed and customer notified.',
+    completed: true,
+    priority: 4,
+    dueDate: offsetDate(-3),
+    project: 'claims',
+    createdAt: now,
+    updatedAt: now,
+  },
+];
+
 const token = getAccessToken();
 
 for (const product of PRODUCTS) {
@@ -551,6 +648,11 @@ for (const claim of CLAIMS) {
   console.log(`Seeded damageClaims/${claim.id}`);
 }
 
+for (const task of TASKS) {
+  await upsert(token, 'operationsTasks', task.id, task);
+  console.log(`Seeded operationsTasks/${task.id}`);
+}
+
 console.log(
-  `Seeded ${PRODUCTS.length} products, ${ASNS.length} ASNs, and ${CLAIMS.length} damage claims for Dang Lifestyle Operations.`,
+  `Seeded ${PRODUCTS.length} products, ${ASNS.length} ASNs, ${CLAIMS.length} claims, and ${TASKS.length} tasks for Dang Lifestyle Operations.`,
 );

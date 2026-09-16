@@ -273,6 +273,10 @@ export const DEMO_WAREHOUSES = [
   'Allentown, PA — East Coast Hub',
 ] as const;
 
+export const DEMO_CARRIERS = ['USPS', 'UPS', 'FedEx'] as const;
+
+export type DemoCarrier = (typeof DEMO_CARRIERS)[number];
+
 export const CLAIM_STATUS_LABELS: Record<ClaimStatus, string> = {
   new: 'New',
   investigating: 'Investigating',
