@@ -730,7 +730,9 @@ service cloud.firestore {
         && data.description is string
         && data.description.size() <= 1000
         && data.completed is bool
-        && data.priority in [1, 2, 3, 4]
+        && data.priority is int
+        && data.priority >= 1
+        && data.priority <= 4
         && data.dueDate is string
         && data.dueDate.size() <= 10
         && data.project in ['inbox', 'barcodes', 'asn', 'claims', 'refunds']

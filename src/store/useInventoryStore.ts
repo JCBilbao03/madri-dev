@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { formatFirestoreError } from '@/lib/firestoreErrors';
 import {
   createInventoryItem,
   deleteInventoryItem,
@@ -15,13 +16,10 @@ const LEGACY_STORAGE_KEY = 'madribuild-inventory-items';
 
 function formatInventoryError(error: unknown): string {
   const message = error instanceof Error ? error.message : 'Something went wrong.';
-  if (/permission|insufficient/i.test(message)) {
-    return 'Could not reach Firestore or Storage. Refresh the page — if this persists, deploy the latest Firebase rules.';
-  }
   if (/storage|upload|bucket/i.test(message)) {
     return 'Could not upload the product photo to Firebase Storage. Check that Storage is enabled and rules are deployed.';
   }
-  return message;
+  return formatFirestoreError(error, 'Catalog');
 }
 
 interface LegacyPersistedState {

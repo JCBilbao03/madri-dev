@@ -12,7 +12,8 @@ The browser Firebase config is public by design. Restrict the Web API key in
    - `https://www.madribuild.com/*`
    - `https://madridev-119f7.web.app/*`
    - `https://madridev-119f7.firebaseapp.com/*`
-   - `http://localhost:*` (local development)
+   - `http://localhost:*/*` and `http://127.0.0.1:*/*` (local development — required for App Check token exchange on `localhost`)
+   - Optionally also `http://localhost:5173/*` if you always use Vite’s default port
 
 Without the **madribuild.com** referrers, Firestore and Auth calls fail on the custom
 domain even though Hosting serves the site correctly.
@@ -50,9 +51,23 @@ the contact form.
 
 ### Local development
 
-With `VITE_FIREBASE_APP_CHECK_SITE_KEY` set, the dev server enables a debug token.
-Open the browser console, copy the printed debug token, and register it under
-**App Check → Manage debug tokens** in Firebase Console.
+1. Set a fixed debug token in `.env` (see `.env.example`):
+
+   ```bash
+   VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN=your-uuid-v4-token
+   ```
+
+2. Register it once (requires `npx firebase login`):
+
+   ```bash
+   npm run appcheck:register-debug-token
+   ```
+
+   Or paste the same UUID under [App Check → Manage debug tokens](https://console.firebase.google.com/project/madridev-119f7/appcheck).
+
+3. Restart `npm run dev` and hard-refresh the browser.
+
+Without a registered debug token, Firestore reads/writes fail on `localhost` when App Check enforcement is enabled.
 
 ## Content Security Policy (Hosting headers)
 

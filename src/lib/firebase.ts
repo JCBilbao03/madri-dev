@@ -10,12 +10,6 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-declare global {
-  interface Window {
-    FIREBASE_APPCHECK_DEBUG_TOKEN?: boolean | string;
-  }
-}
-
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'AIzaSyBtRfHkOCHNOXpO-3OXvuyAjy5OxnYy9Kc',
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? 'madridev-119f7.firebaseapp.com',
@@ -33,10 +27,6 @@ const appCheckSiteKey = import.meta.env.VITE_FIREBASE_APP_CHECK_SITE_KEY;
 let appCheck: AppCheck | undefined;
 
 if (typeof window !== 'undefined' && appCheckSiteKey) {
-  if (import.meta.env.DEV) {
-    window.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  }
-
   appCheck = initializeAppCheck(firebaseApp, {
     provider: new ReCaptchaEnterpriseProvider(appCheckSiteKey),
     isTokenAutoRefreshEnabled: true,
@@ -50,6 +40,29 @@ export async function ensureAppCheckToken(): Promise<void> {
   }
 
   await getToken(appCheck, false);
+}
+
+let firestoreReadyPromise: Promise<void> | undefined;
+
+/**
+ * Waits for App Check before Firestore I/O when enforcement is enabled in Firebase Console.
+ * Avoids race where the first hydrate runs before a token is attached.
+ */
+export async function waitForFirestore(): Promise<void> {
+  if (!appCheck) {
+    return;
+  }
+
+  if (!firestoreReadyPromise) {
+    firestoreReadyPromise = getToken(appCheck, false)
+      .then(() => undefined)
+      .catch((error: unknown) => {
+        firestoreReadyPromise = undefined;
+        throw error;
+      });
+  }
+
+  await firestoreReadyPromise;
 }
 
 /** Firebase Authentication — email/password for the rental marketplace. */

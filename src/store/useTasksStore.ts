@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { formatFirestoreError } from '@/lib/firestoreErrors';
 import {
   createTask,
   deleteTask,
@@ -12,14 +13,6 @@ import type {
   TaskPriority,
   TaskProject,
 } from '@/types/tasks';
-
-function formatTaskError(error: unknown): string {
-  const message = error instanceof Error ? error.message : 'Something went wrong.';
-  if (/permission|insufficient/i.test(message)) {
-    return 'Could not reach Firestore. Deploy the latest Firebase rules and refresh.';
-  }
-  return message;
-}
 
 interface TasksState {
   tasks: OperationsTask[];
@@ -49,7 +42,7 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
       const tasks = await fetchTasks();
       set({ tasks, isLoading: false });
     } catch (error: unknown) {
-      set({ error: formatTaskError(error), isLoading: false });
+      set({ error: formatFirestoreError(error), isLoading: false });
     }
   },
 
@@ -63,7 +56,7 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
       }));
       return task;
     } catch (error: unknown) {
-      set({ error: formatTaskError(error), isSaving: false });
+      set({ error: formatFirestoreError(error), isSaving: false });
       throw error;
     }
   },
@@ -83,7 +76,7 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
       }));
       return task;
     } catch (error: unknown) {
-      set({ error: formatTaskError(error), isSaving: false });
+      set({ error: formatFirestoreError(error), isSaving: false });
       return null;
     }
   },
@@ -103,7 +96,7 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
       }));
       return task;
     } catch (error: unknown) {
-      set({ error: formatTaskError(error), isSaving: false });
+      set({ error: formatFirestoreError(error), isSaving: false });
       return null;
     }
   },
@@ -123,7 +116,7 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
       }));
       return task;
     } catch (error: unknown) {
-      set({ error: formatTaskError(error), isSaving: false });
+      set({ error: formatFirestoreError(error), isSaving: false });
       return null;
     }
   },
@@ -143,7 +136,7 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
       }));
       return task;
     } catch (error: unknown) {
-      set({ error: formatTaskError(error), isSaving: false });
+      set({ error: formatFirestoreError(error), isSaving: false });
       return null;
     }
   },
@@ -163,7 +156,7 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
       }));
       return task;
     } catch (error: unknown) {
-      set({ error: formatTaskError(error), isSaving: false });
+      set({ error: formatFirestoreError(error), isSaving: false });
       return null;
     }
   },
@@ -177,7 +170,7 @@ export const useTasksStore = create<TasksState>()((set, get) => ({
         isSaving: false,
       }));
     } catch (error: unknown) {
-      set({ error: formatTaskError(error), isSaving: false });
+      set({ error: formatFirestoreError(error), isSaving: false });
     }
   },
 

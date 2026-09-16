@@ -8,7 +8,7 @@ import {
 } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, listAll, ref, uploadBytes } from 'firebase/storage';
 
-import { db, storage } from '@/lib/firebase';
+import { db, storage, waitForFirestore } from '@/lib/firebase';
 import {
   asInventoryItem,
   deriveBarcodeValue,
@@ -81,6 +81,7 @@ export function parseInventoryDoc(id: string, data: Record<string, unknown>): In
 }
 
 export async function fetchInventoryItems(): Promise<InventoryItem[]> {
+  await waitForFirestore();
   const snapshot = await getDocs(collection(db, 'inventoryItems'));
   return snapshot.docs
     .map((entry) => parseInventoryDoc(entry.id, entry.data()))
@@ -89,6 +90,7 @@ export async function fetchInventoryItems(): Promise<InventoryItem[]> {
 }
 
 export async function fetchInventoryItem(itemId: string): Promise<InventoryItem | null> {
+  await waitForFirestore();
   const snapshot = await getDoc(doc(db, 'inventoryItems', itemId));
   if (!snapshot.exists()) {
     return null;
@@ -160,6 +162,7 @@ export async function createInventoryItem(
   input: InventoryItemInput,
   photoFile?: File | null,
 ): Promise<InventoryItem> {
+  await waitForFirestore();
   const id = `inv-${crypto.randomUUID().slice(0, 8)}`;
   const photoUrl = await resolvePhotoUrl(id, input, photoFile);
   const item = buildItemDocument(id, input, photoUrl);
@@ -174,6 +177,7 @@ export async function updateInventoryItem(
   photoFile?: File | null,
   existing?: InventoryItem,
 ): Promise<InventoryItem> {
+  await waitForFirestore();
   const current = existing ?? (await fetchInventoryItem(itemId));
   if (!current) {
     throw new Error('Product not found.');
@@ -200,6 +204,7 @@ export async function patchInventoryItem(
   >,
   existing?: InventoryItem,
 ): Promise<InventoryItem> {
+  await waitForFirestore();
   const current = existing ?? (await fetchInventoryItem(itemId));
   if (!current) {
     throw new Error('Product not found.');
@@ -219,6 +224,7 @@ export async function patchInventoryItem(
 }
 
 export async function deleteInventoryItem(itemId: string): Promise<void> {
+  await waitForFirestore();
   await deleteInventoryPhotos(itemId);
   await deleteDoc(doc(db, 'inventoryItems', itemId));
 }

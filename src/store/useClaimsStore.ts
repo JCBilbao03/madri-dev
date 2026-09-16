@@ -9,6 +9,7 @@ import {
   patchClaim,
   updateClaim,
 } from '@/lib/claimsData';
+import { formatFirestoreError } from '@/lib/firestoreErrors';
 import { build3plRequestSummary, simulate3plRequestDelay } from '@/lib/simulatedAction';
 import type {
   ClaimRefund,
@@ -18,14 +19,6 @@ import type {
   DamageClaim,
   DamageClaimInput,
 } from '@/types/operations';
-
-function formatClaimError(error: unknown): string {
-  const message = error instanceof Error ? error.message : 'Something went wrong.';
-  if (/permission|insufficient/i.test(message)) {
-    return 'Could not reach Firestore. Deploy the latest Firebase rules and refresh.';
-  }
-  return message;
-}
 
 interface ClaimsState {
   claims: DamageClaim[];
@@ -59,7 +52,7 @@ export const useClaimsStore = create<ClaimsState>()((set, get) => ({
       const claims = await fetchClaims();
       set({ claims, isLoading: false });
     } catch (error) {
-      set({ isLoading: false, error: formatClaimError(error) });
+      set({ isLoading: false, error: formatFirestoreError(error) });
     }
   },
 
@@ -73,7 +66,7 @@ export const useClaimsStore = create<ClaimsState>()((set, get) => ({
       }));
       return claim;
     } catch (error) {
-      set({ isSaving: false, error: formatClaimError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       throw error;
     }
   },
@@ -89,7 +82,7 @@ export const useClaimsStore = create<ClaimsState>()((set, get) => ({
       }));
       return claim;
     } catch (error) {
-      set({ isSaving: false, error: formatClaimError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },
@@ -103,7 +96,7 @@ export const useClaimsStore = create<ClaimsState>()((set, get) => ({
         isSaving: false,
       }));
     } catch (error) {
-      set({ isSaving: false, error: formatClaimError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
     }
   },
 
@@ -126,7 +119,7 @@ export const useClaimsStore = create<ClaimsState>()((set, get) => ({
       }));
       return claim;
     } catch (error) {
-      set({ isSaving: false, error: formatClaimError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },
@@ -146,7 +139,7 @@ export const useClaimsStore = create<ClaimsState>()((set, get) => ({
       }));
       return claim;
     } catch (error) {
-      set({ isSaving: false, error: formatClaimError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },
@@ -166,7 +159,7 @@ export const useClaimsStore = create<ClaimsState>()((set, get) => ({
       }));
       return claim;
     } catch (error) {
-      set({ isSaving: false, error: formatClaimError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },
@@ -186,7 +179,7 @@ export const useClaimsStore = create<ClaimsState>()((set, get) => ({
       }));
       return claim;
     } catch (error) {
-      set({ isSaving: false, error: formatClaimError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },
@@ -225,7 +218,7 @@ export const useClaimsStore = create<ClaimsState>()((set, get) => ({
       }));
       return claim;
     } catch (error) {
-      set({ isSaving: false, error: formatClaimError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },

@@ -7,7 +7,7 @@ import {
   setDoc,
 } from 'firebase/firestore';
 
-import { db } from '@/lib/firebase';
+import { db, waitForFirestore } from '@/lib/firebase';
 import {
   asDamageClaim,
   type ClaimRefund,
@@ -72,6 +72,7 @@ export function parseClaimDoc(id: string, data: Record<string, unknown>): Damage
 }
 
 export async function fetchClaims(): Promise<DamageClaim[]> {
+  await waitForFirestore();
   const snapshot = await getDocs(collection(db, 'damageClaims'));
   return snapshot.docs
     .map((entry) => parseClaimDoc(entry.id, entry.data()))
@@ -80,6 +81,7 @@ export async function fetchClaims(): Promise<DamageClaim[]> {
 }
 
 export async function fetchClaim(claimId: string): Promise<DamageClaim | null> {
+  await waitForFirestore();
   const snapshot = await getDoc(doc(db, 'damageClaims', claimId));
   if (!snapshot.exists()) {
     return null;
@@ -88,6 +90,7 @@ export async function fetchClaim(claimId: string): Promise<DamageClaim | null> {
 }
 
 export async function createClaim(input: DamageClaimInput): Promise<DamageClaim> {
+  await waitForFirestore();
   const id = `claim-${crypto.randomUUID().slice(0, 8)}`;
   const claim = buildClaimDocument(id, input);
   await setDoc(doc(db, 'damageClaims', id), claim);
@@ -99,6 +102,7 @@ export async function updateClaim(
   input: DamageClaimInput,
   existing?: DamageClaim,
 ): Promise<DamageClaim> {
+  await waitForFirestore();
   const current = existing ?? (await fetchClaim(claimId));
   if (!current) {
     throw new Error('Claim not found.');
@@ -119,6 +123,7 @@ export async function patchClaim(
   >,
   existing?: DamageClaim,
 ): Promise<DamageClaim> {
+  await waitForFirestore();
   const current = existing ?? (await fetchClaim(claimId));
   if (!current) {
     throw new Error('Claim not found.');
@@ -136,6 +141,7 @@ export async function patchClaim(
 }
 
 export async function deleteClaim(claimId: string): Promise<void> {
+  await waitForFirestore();
   await deleteDoc(doc(db, 'damageClaims', claimId));
 }
 

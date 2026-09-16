@@ -1,12 +1,13 @@
-import { CalendarDays, CheckCircle2, Inbox, Sun } from 'lucide-react';
-import { useCallback, useEffect, useMemo } from 'react';
+import { CalendarDays, CheckCircle2, Inbox, Plus, Sun } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
+import { TaskAddModal } from '@/components/tasks/TaskAddModal';
 import { TaskItem } from '@/components/tasks/TaskItem';
-import { TaskQuickAdd } from '@/components/tasks/TaskQuickAdd';
 import { InventoryLoadingState } from '@/components/inventory/InventoryLoadingState';
 import { InventoryPanel } from '@/components/inventory/InventoryPanel';
 import { InventoryPage } from '@/components/inventory/InventoryPage';
+import { Button } from '@/components/ui/Button';
 import { countTasksForView, filterTasksByView, sortTasks, todayIsoDate } from '@/lib/taskFilters';
 import { cn } from '@/lib/utils';
 import { useTasksStore } from '@/store/useTasksStore';
@@ -34,6 +35,7 @@ function parseView(value: string | null): TaskView {
 export function TasksPage() {
   const [searchParams] = useSearchParams();
   const view = parseView(searchParams.get('view'));
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const tasks = useTasksStore((state) => state.tasks);
   const isLoading = useTasksStore((state) => state.isLoading);
@@ -69,14 +71,29 @@ export function TasksPage() {
 
   const defaultDueDate = view === 'today' ? todayIsoDate() : '';
 
+  const handleOpenAdd = useCallback(() => {
+    useTasksStore.setState({ error: '' });
+    setIsAddOpen(true);
+  }, []);
+
+  const handleCloseAdd = useCallback(() => {
+    setIsAddOpen(false);
+  }, []);
+
   const handleAddTask = useCallback(
     async (input: {
       title: string;
+      description?: string;
       dueDate?: string;
       priority?: TaskPriority;
       project?: TaskProject;
     }) => {
-      await addTask(input);
+      try {
+        await addTask(input);
+        setIsAddOpen(false);
+      } catch {
+        // Error is stored in the tasks store and shown in the modal.
+      }
     },
     [addTask],
   );
@@ -109,6 +126,8 @@ export function TasksPage() {
     [setProject],
   );
 
+  const canAddTasks = view !== 'completed';
+
   return (
     <InventoryPage className="min-h-full">
       <header className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -120,13 +139,26 @@ export function TasksPage() {
             {TASK_VIEW_LABELS[view]}
           </h1>
         </div>
-        <div className="w-full max-w-sm rounded-lg border border-line bg-surface-raised px-4 py-3 shadow-sm sm:px-5 sm:py-4 lg:ml-auto lg:text-right">
-          <p className="font-display text-[10px] tracking-[0.2em] text-[color:var(--inv-scan)] uppercase">
-            About this view
-          </p>
-          <p className="mt-2 font-sans text-base font-medium leading-relaxed text-ink">
-            {VIEW_OPTIONS.find((option) => option.id === view)?.description}
-          </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch lg:ml-auto">
+          {canAddTasks ? (
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleOpenAdd}
+              className="w-full shrink-0 sm:w-auto"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Add task
+            </Button>
+          ) : null}
+          <div className="w-full max-w-sm rounded-lg border border-line bg-surface-raised px-4 py-3 shadow-sm sm:px-5 sm:py-4 lg:text-right">
+            <p className="font-display text-[10px] tracking-[0.2em] text-[color:var(--inv-scan)] uppercase">
+              About this view
+            </p>
+            <p className="mt-2 font-sans text-base font-medium leading-relaxed text-ink">
+              {VIEW_OPTIONS.find((option) => option.id === view)?.description}
+            </p>
+          </div>
         </div>
       </header>
 
@@ -167,17 +199,24 @@ export function TasksPage() {
         </InventoryPanel>
 
         <div className="min-w-0 space-y-4">
-          {view !== 'completed' ? (
-            <TaskQuickAdd
-              defaultDueDate={defaultDueDate}
-              isSaving={isSaving}
-              onAdd={handleAddTask}
-            />
+          {canAddTasks ? (
+            <button
+              type="button"
+              onClick={handleOpenAdd}
+              className={cn(
+                'inventory-panel flex w-full min-h-12 items-center gap-3 px-4 py-3 text-left transition-colors sm:px-5',
+                'text-ink-muted hover:border-[color:var(--inv-scan)]/30 hover:bg-[color:var(--inv-scan)]/5 hover:text-ink',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--inv-scan)]/50',
+              )}
+            >
+              <Plus className="size-4 shrink-0 text-[color:var(--inv-scan)]" aria-hidden="true" />
+              <span className="text-sm">Add a task…</span>
+            </button>
           ) : null}
 
           {isLoading ? (
             <InventoryLoadingState />
-          ) : error ? (
+          ) : error && !isAddOpen ? (
             <p className="inventory-panel px-4 py-4 text-sm text-danger">{error}</p>
           ) : visibleTasks.length === 0 ? (
             <InventoryPanel className="px-5 py-10 text-center">
@@ -185,8 +224,14 @@ export function TasksPage() {
               <p className="mt-2 text-sm text-ink-muted">
                 {view === 'completed'
                   ? 'Completed tasks will appear in this list.'
-                  : 'Add a task above to get started.'}
+                  : 'Add your first task to track ops follow-ups.'}
               </p>
+              {canAddTasks ? (
+                <Button type="button" variant="primary" onClick={handleOpenAdd} className="mt-6">
+                  <Plus className="size-4" aria-hidden="true" />
+                  Add task
+                </Button>
+              ) : null}
             </InventoryPanel>
           ) : (
             <InventoryPanel className="overflow-hidden p-0">
@@ -207,6 +252,15 @@ export function TasksPage() {
           )}
         </div>
       </div>
+
+      <TaskAddModal
+        isOpen={isAddOpen}
+        onClose={handleCloseAdd}
+        defaultDueDate={defaultDueDate}
+        isSaving={isSaving}
+        error={isAddOpen ? error : ''}
+        onAdd={handleAddTask}
+      />
     </InventoryPage>
   );
 }

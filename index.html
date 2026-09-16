@@ -76,6 +76,8 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- App Check debug token must load before any Firebase SDK import -->
+    <script type="module" src="/src/lib/firebaseAppCheckDebug.ts"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

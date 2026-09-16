@@ -7,7 +7,7 @@ import {
   setDoc,
 } from 'firebase/firestore';
 
-import { db } from '@/lib/firebase';
+import { db, waitForFirestore } from '@/lib/firebase';
 import {
   asOperationsTask,
   type OperationsTask,
@@ -47,6 +47,7 @@ export function parseTaskDoc(id: string, data: Record<string, unknown>): Operati
 }
 
 export async function fetchTasks(): Promise<OperationsTask[]> {
+  await waitForFirestore();
   const snapshot = await getDocs(collection(db, 'operationsTasks'));
   return snapshot.docs
     .map((entry) => parseTaskDoc(entry.id, entry.data()))
@@ -55,6 +56,7 @@ export async function fetchTasks(): Promise<OperationsTask[]> {
 }
 
 export async function fetchTask(taskId: string): Promise<OperationsTask | null> {
+  await waitForFirestore();
   const snapshot = await getDoc(doc(db, 'operationsTasks', taskId));
   if (!snapshot.exists()) {
     return null;
@@ -63,7 +65,9 @@ export async function fetchTask(taskId: string): Promise<OperationsTask | null> 
 }
 
 export async function createTask(input: OperationsTaskInput): Promise<OperationsTask> {
-  const id = `task-${crypto.randomUUID()}`;
+  await waitForFirestore();
+  // UUID is 36 chars; rules allow id length 8–40 (`task-` + UUID would be 41).
+  const id = crypto.randomUUID();
   const task = buildTaskDocument(id, input);
   await setDoc(doc(db, 'operationsTasks', id), task);
   return task;
@@ -74,6 +78,7 @@ export async function updateTask(
   input: OperationsTaskInput,
   existing: OperationsTask,
 ): Promise<OperationsTask> {
+  await waitForFirestore();
   const task = buildTaskDocument(taskId, input, existing);
   await setDoc(doc(db, 'operationsTasks', taskId), task);
   return task;
@@ -84,6 +89,7 @@ export async function patchTask(
   existing: OperationsTask,
   patch: Partial<OperationsTask>,
 ): Promise<OperationsTask> {
+  await waitForFirestore();
   const task = buildTaskDocument(
     taskId,
     {
@@ -101,6 +107,7 @@ export async function patchTask(
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
+  await waitForFirestore();
   await deleteDoc(doc(db, 'operationsTasks', taskId));
 }
 

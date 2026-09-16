@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { formatFirestoreError } from '@/lib/firestoreErrors';
 import { exportAsnToXlsx } from '@/lib/asnExport';
 import {
   createAsn,
@@ -13,14 +14,6 @@ import { deriveAsnStatusAfterValidation, validateAsnLineItems } from '@/lib/asnV
 import { simulateAsnSubmitDelay } from '@/lib/simulatedAction';
 import type { InventoryItem } from '@/types/inventory';
 import type { Asn, AsnInput } from '@/types/operations';
-
-function formatAsnError(error: unknown): string {
-  const message = error instanceof Error ? error.message : 'Something went wrong.';
-  if (/permission|insufficient/i.test(message)) {
-    return 'Could not reach Firestore. Deploy the latest Firebase rules and refresh.';
-  }
-  return message;
-}
 
 interface AsnState {
   asns: Asn[];
@@ -50,7 +43,7 @@ export const useAsnStore = create<AsnState>()((set, get) => ({
       const asns = await fetchAsns();
       set({ asns, isLoading: false });
     } catch (error) {
-      set({ isLoading: false, error: formatAsnError(error) });
+      set({ isLoading: false, error: formatFirestoreError(error) });
     }
   },
 
@@ -64,7 +57,7 @@ export const useAsnStore = create<AsnState>()((set, get) => ({
       }));
       return asn;
     } catch (error) {
-      set({ isSaving: false, error: formatAsnError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       throw error;
     }
   },
@@ -80,7 +73,7 @@ export const useAsnStore = create<AsnState>()((set, get) => ({
       }));
       return asn;
     } catch (error) {
-      set({ isSaving: false, error: formatAsnError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },
@@ -94,7 +87,7 @@ export const useAsnStore = create<AsnState>()((set, get) => ({
         isSaving: false,
       }));
     } catch (error) {
-      set({ isSaving: false, error: formatAsnError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
     }
   },
 
@@ -116,7 +109,7 @@ export const useAsnStore = create<AsnState>()((set, get) => ({
       }));
       return asn;
     } catch (error) {
-      set({ isSaving: false, error: formatAsnError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },
@@ -157,7 +150,7 @@ export const useAsnStore = create<AsnState>()((set, get) => ({
       }));
       return asn;
     } catch (error) {
-      set({ isSaving: false, error: formatAsnError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },
@@ -178,7 +171,7 @@ export const useAsnStore = create<AsnState>()((set, get) => ({
       }));
       return asn;
     } catch (error) {
-      set({ isSaving: false, error: formatAsnError(error) });
+      set({ isSaving: false, error: formatFirestoreError(error) });
       return null;
     }
   },

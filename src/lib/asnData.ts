@@ -7,7 +7,7 @@ import {
   setDoc,
 } from 'firebase/firestore';
 
-import { db } from '@/lib/firebase';
+import { db, waitForFirestore } from '@/lib/firebase';
 import { asAsn, type Asn, type AsnInput, type AsnStatus, type ValidationIssue } from '@/types/operations';
 
 function buildAsnDocument(
@@ -46,6 +46,7 @@ export function parseAsnDoc(id: string, data: Record<string, unknown>): Asn | nu
 }
 
 export async function fetchAsns(): Promise<Asn[]> {
+  await waitForFirestore();
   const snapshot = await getDocs(collection(db, 'asns'));
   return snapshot.docs
     .map((entry) => parseAsnDoc(entry.id, entry.data()))
@@ -54,6 +55,7 @@ export async function fetchAsns(): Promise<Asn[]> {
 }
 
 export async function fetchAsn(asnId: string): Promise<Asn | null> {
+  await waitForFirestore();
   const snapshot = await getDoc(doc(db, 'asns', asnId));
   if (!snapshot.exists()) {
     return null;
@@ -62,6 +64,7 @@ export async function fetchAsn(asnId: string): Promise<Asn | null> {
 }
 
 export async function createAsn(input: AsnInput): Promise<Asn> {
+  await waitForFirestore();
   const id = `asn-${crypto.randomUUID().slice(0, 8)}`;
   const asn = buildAsnDocument(id, input, 'draft', []);
   await setDoc(doc(db, 'asns', id), asn);
@@ -73,6 +76,7 @@ export async function updateAsn(
   input: AsnInput,
   existing?: Asn,
 ): Promise<Asn> {
+  await waitForFirestore();
   const current = existing ?? (await fetchAsn(asnId));
   if (!current) {
     throw new Error('ASN not found.');
@@ -96,6 +100,7 @@ export async function patchAsn(
   patch: Partial<Pick<Asn, 'status' | 'validationIssues' | 'generatedFileName' | 'lineItems'>>,
   existing?: Asn,
 ): Promise<Asn> {
+  await waitForFirestore();
   const current = existing ?? (await fetchAsn(asnId));
   if (!current) {
     throw new Error('ASN not found.');
@@ -112,5 +117,6 @@ export async function patchAsn(
 }
 
 export async function deleteAsn(asnId: string): Promise<void> {
+  await waitForFirestore();
   await deleteDoc(doc(db, 'asns', asnId));
 }
