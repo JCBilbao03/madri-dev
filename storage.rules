@@ -1,6 +1,10 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    function isAppCheckVerified() {
+      return request.appCheck != null && request.appCheck.token.valid == true;
+    }
+
     // Property media — readable by signed-in users; writes are admin/seed only for now.
     match /properties/{propertyId}/{fileName} {
       allow read: if request.auth != null;
@@ -10,9 +14,10 @@ service firebase.storage {
     // Product photos for the inventory catalog demo.
     match /inventory/{itemId}/{fileName} {
       allow read: if true;
-      allow write: if request.resource.size < 5 * 1024 * 1024
+      allow write: if isAppCheckVerified()
+        && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
-      allow delete: if true;
+      allow delete: if isAppCheckVerified();
     }
 
     match /{allPaths=**} {

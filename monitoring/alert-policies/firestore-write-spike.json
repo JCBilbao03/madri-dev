@@ -1,0 +1,33 @@
+{
+  "displayName": "MadriBuild — Firestore write spike",
+  "documentation": {
+    "content": "Firestore document writes exceeded the expected rate for 5 minutes. This may indicate lead spam, demo collection abuse, or a misconfigured client loop.\n\nCheck Firebase Console → Firestore → Usage and App Check → Metrics.",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "enabled": true,
+  "conditions": [
+    {
+      "displayName": "Write ops rate above threshold",
+      "conditionThreshold": {
+        "filter": "resource.type = \"firestore.googleapis.com/Database\" AND metric.type = \"firestore.googleapis.com/document/write_ops_count\"",
+        "aggregations": [
+          {
+            "alignmentPeriod": "300s",
+            "perSeriesAligner": "ALIGN_RATE"
+          }
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 50,
+        "duration": "300s",
+        "trigger": {
+          "count": 1
+        },
+        "evaluationMissingData": "EVALUATION_MISSING_DATA_INACTIVE"
+      }
+    }
+  ],
+  "alertStrategy": {
+    "autoClose": "604800s"
+  }
+}

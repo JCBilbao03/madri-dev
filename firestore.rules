@@ -65,6 +65,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isAppCheckVerified() {
+      return request.appCheck != null && request.appCheck.token.valid == true;
+    }
+
+    // Demo collections and public lead forms accept writes from the web app (App Check)
+    // or from seeded admin accounts. Raw SDK/curl calls without a valid token are denied.
+    function isTrustedClient() {
+      return isAppCheckVerified() || isAdmin();
+    }
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
@@ -679,44 +689,50 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Public demo catalog — no login or App Check; shape validation limits abuse.
+    // Public demo catalog — reads are open; writes require App Check or admin.
     match /inventoryItems/{itemId} {
       allow read: if true;
 
-      allow create: if isValidInventoryItem(request.resource.data)
+      allow create: if isTrustedClient()
+        && isValidInventoryItem(request.resource.data)
         && request.resource.data.id == itemId;
 
-      allow update: if isValidInventoryItem(request.resource.data)
+      allow update: if isTrustedClient()
+        && isValidInventoryItem(request.resource.data)
         && request.resource.data.id == itemId
         && areImmutableFieldsUnchanged(['id', 'createdAt']);
 
-      allow delete: if true;
+      allow delete: if isTrustedClient();
     }
 
     match /asns/{asnId} {
       allow read: if true;
 
-      allow create: if isValidAsn(request.resource.data)
+      allow create: if isTrustedClient()
+        && isValidAsn(request.resource.data)
         && request.resource.data.id == asnId;
 
-      allow update: if isValidAsn(request.resource.data)
+      allow update: if isTrustedClient()
+        && isValidAsn(request.resource.data)
         && request.resource.data.id == asnId
         && areImmutableFieldsUnchanged(['id', 'createdAt']);
 
-      allow delete: if true;
+      allow delete: if isTrustedClient();
     }
 
     match /damageClaims/{claimId} {
-      allow read: if true;
+      allow read: if isTrustedClient();
 
-      allow create: if isValidDamageClaim(request.resource.data)
+      allow create: if isTrustedClient()
+        && isValidDamageClaim(request.resource.data)
         && request.resource.data.id == claimId;
 
-      allow update: if isValidDamageClaim(request.resource.data)
+      allow update: if isTrustedClient()
+        && isValidDamageClaim(request.resource.data)
         && request.resource.data.id == claimId
         && areImmutableFieldsUnchanged(['id', 'createdAt']);
 
-      allow delete: if true;
+      allow delete: if isTrustedClient();
     }
 
     function isValidOperationsTask(data) {
@@ -747,14 +763,16 @@ service cloud.firestore {
     match /operationsTasks/{taskId} {
       allow read: if true;
 
-      allow create: if isValidOperationsTask(request.resource.data)
+      allow create: if isTrustedClient()
+        && isValidOperationsTask(request.resource.data)
         && request.resource.data.id == taskId;
 
-      allow update: if isValidOperationsTask(request.resource.data)
+      allow update: if isTrustedClient()
+        && isValidOperationsTask(request.resource.data)
         && request.resource.data.id == taskId
         && areImmutableFieldsUnchanged(['id', 'createdAt']);
 
-      allow delete: if true;
+      allow delete: if isTrustedClient();
     }
 
     match /leads/{leadId} {
@@ -763,8 +781,10 @@ service cloud.firestore {
       allow create: if isValidLeadShape(request.resource.data)
         && request.resource.data.leadId == leadId
         && (
-          (
-            request.resource.data.status == 'new'
+          isAdmin()
+          || (
+            isAppCheckVerified()
+            && request.resource.data.status == 'new'
             && (!('notes' in request.resource.data) || request.resource.data.notes.size() == 0)
             && (!('assigneeId' in request.resource.data) || request.resource.data.assigneeId.size() == 0)
             && (!('assigneeName' in request.resource.data) || request.resource.data.assigneeName.size() == 0)
@@ -773,7 +793,6 @@ service cloud.firestore {
               || (request.resource.data.source == 'rental-application' && isAuthenticated())
             )
           )
-          || isAdmin()
         );
 
       allow update: if isAdmin()

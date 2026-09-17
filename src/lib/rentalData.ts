@@ -9,7 +9,7 @@ import {
   where,
 } from 'firebase/firestore';
 
-import { DEMO_APPLICATIONS, DEMO_PROPERTIES } from '@/data/demoListings';
+import { DEMO_PROPERTIES } from '@/data/demoListings';
 import { fetchUserProfile } from '@/lib/auth';
 import { db } from '@/lib/firebase';
 import { captureLead } from '@/lib/leads';
@@ -101,17 +101,34 @@ export async function fetchProperty(propertyId: string): Promise<Property | null
   return DEMO_PROPERTIES.find((property) => property.propertyId === propertyId) ?? null;
 }
 
-export async function fetchApplications(): Promise<RentalApplication[]> {
-  try {
-    const snapshot = await getDocs(collection(db, 'applications'));
-    const applications = snapshot.docs
-      .map((item) => asApplication(item.id, item.data()))
-      .filter((item): item is RentalApplication => item !== null);
+export async function fetchLandlordApplications(landlordId: string): Promise<RentalApplication[]> {
+  const properties = await fetchProperties();
+  const propertyIds = properties
+    .filter((property) => property.landlordId === landlordId)
+    .map((property) => property.propertyId);
 
-    return applications.length > 0 ? applications : DEMO_APPLICATIONS;
-  } catch {
-    return DEMO_APPLICATIONS;
+  if (propertyIds.length === 0) {
+    return [];
   }
+
+  const applications: RentalApplication[] = [];
+  const chunkSize = 30;
+
+  for (let offset = 0; offset < propertyIds.length; offset += chunkSize) {
+    const chunk = propertyIds.slice(offset, offset + chunkSize);
+    const snapshot = await getDocs(
+      query(collection(db, 'applications'), where('propertyId', 'in', chunk)),
+    );
+
+    for (const item of snapshot.docs) {
+      const application = asApplication(item.id, item.data());
+      if (application) {
+        applications.push(application);
+      }
+    }
+  }
+
+  return applications.sort((left, right) => right.timestamp.localeCompare(left.timestamp));
 }
 
 export async function fetchTenantApplications(tenantId: string): Promise<RentalApplication[]> {

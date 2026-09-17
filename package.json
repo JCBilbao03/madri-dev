@@ -12,7 +12,8 @@
     "seed:demo": "node scripts/seed-demo.mjs",
     "seed:operations": "node scripts/seed-operations-demo.mjs",
     "appcheck:register-debug-token": "node scripts/register-app-check-debug-token.mjs",
-    "seed:admins": "node scripts/seed-admins.mjs"
+    "seed:admins": "node scripts/seed-admins.mjs",
+    "monitoring:setup-alerts": "node scripts/setup-monitoring-alerts.mjs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

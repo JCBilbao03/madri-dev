@@ -33,7 +33,7 @@ if (typeof window !== 'undefined' && appCheckSiteKey) {
   });
 }
 
-/** Lead writes require a valid App Check token in Firestore rules. */
+/** Public writes and demo collections require a valid App Check token in Firestore rules. */
 export async function ensureAppCheckToken(): Promise<void> {
   if (!appCheck) {
     return;

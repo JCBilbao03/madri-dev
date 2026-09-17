@@ -89,9 +89,7 @@ export async function createLead(input: NewLeadInput): Promise<Lead> {
     ...clipAssignee(input),
   };
 
-  if (source === 'contact-form' || source === 'cleaning-booking' || source === 'inventory-export') {
-    await ensureAppCheckToken();
-  }
+  await ensureAppCheckToken();
 
   await setDoc(doc(db, 'leads', leadId), lead);
   return lead;

@@ -18,11 +18,12 @@ The browser Firebase config is public by design. Restrict the Web API key in
 Without the **madribuild.com** referrers, Firestore and Auth calls fail on the custom
 domain even though Hosting serves the site correctly.
 
-## Firebase App Check (required for public lead forms)
+## Firebase App Check (required for public lead forms and demo writes)
 
-Contact and cleaning lead writes are allowed without login when the payload passes
-`isValidLeadShape` (status `new`, no notes, no assignee). App Check is initialized
-in the client and can be enforced in rules again once token exchange is healthy.
+Contact and cleaning lead writes, inventory/ops demo mutations, and damage-claim reads
+require a valid App Check token in **Firestore and Storage rules** (`isAppCheckVerified()` /
+`isTrustedClient()`). The client initializes App Check when `VITE_FIREBASE_APP_CHECK_SITE_KEY`
+is set and waits for a token before Firestore I/O via `waitForFirestore()`.
 
 1. In [Firebase Console → App Check](https://console.firebase.google.com/project/madridev-119f7/appcheck),
    register the web app with **reCAPTCHA Enterprise** (must match the provider in
@@ -34,7 +35,7 @@ in the client and can be enforced in rules again once token exchange is healthy.
    ```
 
 3. Rebuild and deploy: `npm run deploy`.
-4. In App Check, enable **Enforcement** for Cloud Firestore when traffic looks healthy.
+4. In App Check, enable **Enforcement** for Cloud Firestore and Cloud Storage when traffic looks healthy.
 
 ### Custom domain (madribuild.com)
 
@@ -78,6 +79,16 @@ After changing headers, run `firebase deploy --only hosting`.
 ## Deploying rules and headers
 
 `npm run deploy` publishes Hosting, Firestore rules, and Storage rules together.
+
+## Monitoring alerts
+
+Operational alerts (Firestore/Storage write spikes, rules denials, App Check failures) are configured with Cloud Monitoring. See [monitoring/ALERTS.md](monitoring/ALERTS.md) and run:
+
+```bash
+npm run monitoring:setup-alerts
+```
+
+Budget alerts are set up once in the Firebase / Google Cloud console (also documented in `monitoring/ALERTS.md`).
 
 ## Admin accounts
 

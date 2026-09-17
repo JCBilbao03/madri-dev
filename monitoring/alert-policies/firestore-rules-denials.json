@@ -1,0 +1,33 @@
+{
+  "displayName": "MadriBuild — Firestore rules denials",
+  "documentation": {
+    "content": "Firestore Security Rules are rejecting requests at an elevated rate for 5 minutes. This often means probing, misconfigured clients, or App Check enforcement blocking traffic.\n\nCheck Firebase Console → Firestore → Rules → Metrics.",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "enabled": true,
+  "conditions": [
+    {
+      "displayName": "Rules DENY rate above threshold",
+      "conditionThreshold": {
+        "filter": "resource.type = \"firestore.googleapis.com/Database\" AND metric.type = \"firestore.googleapis.com/rules/evaluation_count\" AND metric.labels.result = \"DENY\"",
+        "aggregations": [
+          {
+            "alignmentPeriod": "60s",
+            "perSeriesAligner": "ALIGN_RATE"
+          }
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 20,
+        "duration": "300s",
+        "trigger": {
+          "count": 1
+        },
+        "evaluationMissingData": "EVALUATION_MISSING_DATA_INACTIVE"
+      }
+    }
+  ],
+  "alertStrategy": {
+    "autoClose": "604800s"
+  }
+}

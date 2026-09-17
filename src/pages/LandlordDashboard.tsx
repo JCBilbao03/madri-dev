@@ -12,9 +12,10 @@ import {
   useRentalIsDemo,
   useRentalUpdateApplicationStatus,
 } from '@/hooks/useRentalSession';
+import { useAuthStore } from '@/store/useAuthStore';
 import { authErrorMessage } from '@/lib/auth';
 import { demoLandlordProperties, mergeDemoApplications, mergeDemoProperties } from '@/lib/rentalDemo';
-import { fetchApplications, fetchProperties } from '@/lib/rentalData';
+import { fetchLandlordApplications, fetchProperties } from '@/lib/rentalData';
 import { useRentalDemoStore } from '@/store/useRentalDemoStore';
 import type { ApplicationStatus, Property, RentalApplication } from '@/types/rental';
 
@@ -92,6 +93,7 @@ function StatusButton({ status, current, applicationId, onStatus }: StatusButton
 }
 
 export function LandlordDashboard() {
+  const user = useAuthStore((state) => state.user);
   const name = useRentalDisplayName();
   const isDemo = useRentalIsDemo();
   const demoApplications = useRentalDemoStore((state) => state.applications);
@@ -105,21 +107,33 @@ export function LandlordDashboard() {
   useEffect(() => {
     let active = true;
 
-    void Promise.all([fetchProperties(), fetchApplications()]).then(([listings, apps]) => {
-      if (!active) {
-        return;
-      }
+    void Promise.all([
+      fetchProperties(),
+      user ? fetchLandlordApplications(user.uid) : Promise.resolve([]),
+    ])
+      .then(([listings, apps]) => {
+        if (!active) {
+          return;
+        }
 
-      const mergedProperties = mergeDemoProperties(listings, screeningOverrides);
-      setProperties(isDemo ? demoLandlordProperties(mergedProperties) : mergedProperties);
-      setApplications(isDemo ? mergeDemoApplications(demoApplications) : apps);
-      setIsLoading(false);
-    });
+        const mergedProperties = mergeDemoProperties(listings, screeningOverrides);
+        setProperties(isDemo ? demoLandlordProperties(mergedProperties) : mergedProperties);
+        setApplications(isDemo ? mergeDemoApplications(demoApplications) : apps);
+        setIsLoading(false);
+      })
+      .catch((loadError) => {
+        if (!active) {
+          return;
+        }
+
+        setError(authErrorMessage(loadError));
+        setIsLoading(false);
+      });
 
     return () => {
       active = false;
     };
-  }, [demoApplications, isDemo, screeningOverrides]);
+  }, [demoApplications, isDemo, screeningOverrides, user]);
 
   const stats = useMemo(
     () => ({
