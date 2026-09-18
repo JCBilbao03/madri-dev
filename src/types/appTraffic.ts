@@ -1,4 +1,4 @@
-export const DEMO_APP_IDS = ['rental', 'cleaning', 'inventory'] as const;
+export const DEMO_APP_IDS = ['marketing', 'rental', 'cleaning', 'inventory'] as const;
 
 export type DemoAppId = (typeof DEMO_APP_IDS)[number];
 

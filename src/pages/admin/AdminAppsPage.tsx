@@ -4,7 +4,7 @@ import { AdminPage } from '@/components/admin/AdminPage';
 import { AppCard } from '@/components/admin/AppCard';
 import { ADMIN_APPS } from '@/data/adminApps';
 import { useAdminChrome } from '@/hooks/useAdminChrome';
-import { countryLabel, fetchDemoAppTrafficSummaries } from '@/lib/appTraffic';
+import { countryLabel, fetchDemoAppTrafficSummaries, trackedAppLabel } from '@/lib/appTraffic';
 import { fetchLeads } from '@/lib/adminData';
 import { authErrorMessage } from '@/lib/auth';
 import type { AppId, Lead } from '@/types/admin';
@@ -70,7 +70,7 @@ export function AdminAppsPage() {
     <AdminPage>
       <div className="mx-auto w-full max-w-6xl">
         <p className="text-sm text-ink-muted">
-          Products in this workspace with anonymous demo visit counts (approximate country) and lead conversions.
+          Products in this workspace with anonymous visit counts (landing + demos), approximate country, and leads.
         </p>
 
         {isLoading ? (
@@ -78,7 +78,7 @@ export function AdminAppsPage() {
         ) : (
           <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
             {ADMIN_APPS.map((app) => {
-              const visitSummary = app.id === 'marketing' ? undefined : trafficByApp[app.id as DemoAppId];
+              const visitSummary = trafficByApp[app.id as DemoAppId];
 
               return (
                 <li key={app.id}>
@@ -96,7 +96,7 @@ export function AdminAppsPage() {
             <ul className="mt-4 space-y-4">
               {traffic.map((entry) => (
                 <li key={entry.appId}>
-                  <p className="text-sm font-medium capitalize text-ink">{entry.appId}</p>
+                  <p className="text-sm font-medium text-ink">{trackedAppLabel(entry.appId)}</p>
                   {entry.topCountries.length === 0 ? (
                     <p className="mt-1 text-xs text-ink-muted">No visits this week.</p>
                   ) : (

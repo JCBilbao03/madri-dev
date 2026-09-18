@@ -1,3 +1,4 @@
+import { DemoAppVisitTracker } from '@/components/analytics/DemoAppVisitTracker';
 import { Contact } from '@/components/features/Contact';
 import { ContactModal } from '@/components/features/ContactModal';
 import { Footer } from '@/components/features/Footer';
@@ -12,6 +13,7 @@ import { Workflow } from '@/components/features/Workflow';
 export function LandingPage() {
   return (
     <>
+      <DemoAppVisitTracker appId="marketing" />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-70 focus:rounded-lg focus:bg-accent focus:px-5 focus:py-2.5 focus:text-sm focus:font-medium focus:text-base"

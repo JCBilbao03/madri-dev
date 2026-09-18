@@ -1,17 +1,19 @@
 import { Link } from 'react-router-dom';
 
-import { countryLabel } from '@/lib/appTraffic';
-import type { DemoAppTrafficSummary } from '@/types/appTraffic';
+import { countryLabel, trackedAppLabel } from '@/lib/appTraffic';
+import type { DemoAppId, DemoAppTrafficSummary } from '@/types/appTraffic';
 
 interface DashboardAppTrafficProps {
   summaries: DemoAppTrafficSummary[];
 }
 
-const DEMO_APP_LABELS: Record<string, string> = {
-  rental: 'Rental marketplace',
-  cleaning: 'Cleaning marketplace',
-  inventory: 'Inventory app',
-};
+function visitDetail(entry: DemoAppTrafficSummary): string {
+  if (entry.appId === 'marketing') {
+    return `${entry.viewsLast7Days} landing visits this week`;
+  }
+
+  return `${entry.viewsLast7Days} visits this week · ${entry.fromWorksViews} from Works (all time)`;
+}
 
 export function DashboardAppTraffic({ summaries }: DashboardAppTrafficProps) {
   const sorted = [...summaries].sort((left, right) => right.viewsLast7Days - left.viewsLast7Days);
@@ -20,9 +22,9 @@ export function DashboardAppTraffic({ summaries }: DashboardAppTrafficProps) {
     <section className="rounded-2xl border border-line/80 bg-surface">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line px-4 py-4 sm:px-5">
         <div>
-          <h2 className="font-display text-base font-semibold text-ink">Demo app traffic</h2>
+          <h2 className="font-display text-base font-semibold text-ink">Site traffic</h2>
           <p className="mt-0.5 text-xs text-ink-muted">
-            Anonymous visit counts from the Works section and direct links. Country is approximate.
+            Landing page and demo app visits. Country is approximate; no personal data stored.
           </p>
         </div>
         <Link
@@ -35,21 +37,18 @@ export function DashboardAppTraffic({ summaries }: DashboardAppTrafficProps) {
 
       {sorted.every((entry) => entry.viewsLast7Days === 0 && entry.totalViews === 0) ? (
         <p className="px-5 py-10 text-center text-sm text-ink-muted">
-          No demo visits recorded yet. Open a Works card on the landing page to generate data.
+          No visits recorded yet. Open the landing page or a Works demo to generate data.
         </p>
       ) : (
         <div className="divide-y divide-line/80">
           {sorted.map((entry) => {
-            const label = DEMO_APP_LABELS[entry.appId] ?? entry.appId;
             const topCountry = entry.topCountries[0];
 
             return (
               <div key={entry.appId} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div className="min-w-0">
-                  <p className="font-medium text-ink">{label}</p>
-                  <p className="mt-0.5 text-xs text-ink-muted">
-                    {entry.viewsLast7Days} visits this week · {entry.fromWorksViews} from Works (all time)
-                  </p>
+                  <p className="font-medium text-ink">{trackedAppLabel(entry.appId as DemoAppId)}</p>
+                  <p className="mt-0.5 text-xs text-ink-muted">{visitDetail(entry)}</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 sm:justify-end">

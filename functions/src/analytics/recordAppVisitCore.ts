@@ -136,7 +136,9 @@ export async function recordAppVisit(
       appId: input.appId,
       date,
       totalViews: FieldValue.increment(1),
-      [`countries.${country}`]: FieldValue.increment(1),
+      countries: {
+        [country]: FieldValue.increment(1),
+      },
       updatedAt: new Date(nowMs).toISOString(),
     };
 
@@ -145,11 +147,15 @@ export async function recordAppVisit(
     }
 
     if (input.timezone) {
-      dailyUpdate[`timezones.${input.timezone}`] = FieldValue.increment(1);
+      dailyUpdate.timezones = {
+        [input.timezone]: FieldValue.increment(1),
+      };
     }
 
     if (input.language) {
-      dailyUpdate[`languages.${input.language}`] = FieldValue.increment(1);
+      dailyUpdate.languages = {
+        [input.language]: FieldValue.increment(1),
+      };
     }
 
     transaction.set(dailyRef, dailyUpdate, { merge: true });
@@ -157,7 +163,9 @@ export async function recordAppVisit(
     const totalsUpdate: Record<string, unknown> = {
       appId: input.appId,
       totalViews: FieldValue.increment(1),
-      [`countries.${country}`]: FieldValue.increment(1),
+      countries: {
+        [country]: FieldValue.increment(1),
+      },
       updatedAt: new Date(nowMs).toISOString(),
     };
 

@@ -23,6 +23,41 @@ function asNumber(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0;
 }
 
+/** Reads nested maps and legacy flat keys like `countries.PH` from early deploys. */
+function parseNestedCounts(record: Record<string, unknown>, prefix: string): Record<string, number> {
+  const counts: Record<string, number> = {};
+  const nested = record[prefix];
+
+  if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+    for (const [key, value] of Object.entries(nested as Record<string, unknown>)) {
+      const amount = asNumber(value);
+      if (amount > 0) {
+        counts[key] = amount;
+      }
+    }
+  }
+
+  const flatPrefix = `${prefix}.`;
+
+  for (const [key, value] of Object.entries(record)) {
+    if (!key.startsWith(flatPrefix)) {
+      continue;
+    }
+
+    const code = key.slice(flatPrefix.length);
+    if (!code) {
+      continue;
+    }
+
+    const amount = asNumber(value);
+    if (amount > 0) {
+      counts[code] = (counts[code] ?? 0) + amount;
+    }
+  }
+
+  return counts;
+}
+
 function parseDailyDoc(data: unknown, appId: DemoAppId, date: string): AppVisitDailyDoc {
   const record = data && typeof data === 'object' ? (data as Record<string, unknown>) : {};
 
@@ -31,9 +66,9 @@ function parseDailyDoc(data: unknown, appId: DemoAppId, date: string): AppVisitD
     date,
     totalViews: asNumber(record.totalViews),
     fromWorksViews: asNumber(record.fromWorksViews),
-    countries: typeof record.countries === 'object' && record.countries ? (record.countries as Record<string, number>) : {},
-    timezones: typeof record.timezones === 'object' && record.timezones ? (record.timezones as Record<string, number>) : {},
-    languages: typeof record.languages === 'object' && record.languages ? (record.languages as Record<string, number>) : {},
+    countries: parseNestedCounts(record, 'countries'),
+    timezones: parseNestedCounts(record, 'timezones'),
+    languages: parseNestedCounts(record, 'languages'),
     updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : undefined,
   };
 }
@@ -45,7 +80,7 @@ function parseTotalsDoc(data: unknown, appId: DemoAppId): AppVisitTotalsDoc {
     appId,
     totalViews: asNumber(record.totalViews),
     fromWorksViews: asNumber(record.fromWorksViews),
-    countries: typeof record.countries === 'object' && record.countries ? (record.countries as Record<string, number>) : {},
+    countries: parseNestedCounts(record, 'countries'),
     updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : undefined,
   };
 }
@@ -56,6 +91,17 @@ function topCountries(counts: Record<string, number>, limit = 5): Array<{ code: 
     .sort((left, right) => right[1] - left[1])
     .slice(0, limit)
     .map(([code, count]) => ({ code, count }));
+}
+
+const TRACKED_APP_LABELS: Record<DemoAppId, string> = {
+  marketing: 'MadriBuild site (landing)',
+  rental: 'Rental marketplace',
+  cleaning: 'Cleaning marketplace',
+  inventory: 'Inventory app',
+};
+
+export function trackedAppLabel(appId: DemoAppId): string {
+  return TRACKED_APP_LABELS[appId] ?? appId;
 }
 
 export function countryLabel(code: string): string {
@@ -104,12 +150,15 @@ export async function fetchDemoAppTrafficSummaries(days = 7): Promise<DemoAppTra
         }
       }
 
+      const countrySource =
+        Object.keys(weekCountries).length > 0 ? weekCountries : (totals.countries ?? {});
+
       return {
         appId,
         totalViews: totals.totalViews,
         fromWorksViews: totals.fromWorksViews ?? 0,
         viewsLast7Days,
-        topCountries: topCountries(weekCountries),
+        topCountries: topCountries(countrySource),
       } satisfies DemoAppTrafficSummary;
     }),
   );

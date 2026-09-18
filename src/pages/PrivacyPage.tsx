@@ -53,17 +53,18 @@ export function PrivacyPage() {
           </section>
 
           <section className="mt-8 space-y-3">
-            <h2 className="font-display text-xl font-semibold text-ink">3. Anonymous demo app analytics</h2>
+            <h2 className="font-display text-xl font-semibold text-ink">3. Anonymous site analytics</h2>
             <p className="text-sm leading-relaxed text-ink-muted">
-              When you open a live demo from our <strong className="text-ink">Works</strong> section or visit a demo URL
-              directly, we record <strong className="text-ink">aggregated usage statistics</strong> so we can understand
+              When you visit our <strong className="text-ink">landing page</strong>, open a live demo from{' '}
+              <strong className="text-ink">Works</strong>, or go to a demo URL directly, we record{' '}
+              <strong className="text-ink">aggregated usage statistics</strong> so we can understand traffic and
               interest in each product. We designed this to minimize personal data:
             </p>
             <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-ink-muted">
               <li>
-                <strong className="text-ink">What we store:</strong> counts per demo app, per day; whether the visit
-                came from Works or a direct link; approximate <strong className="text-ink">country</strong> (ISO code);
-                optional browser language and timezone hints.
+                <strong className="text-ink">What we store:</strong> counts per page or demo app, per day; for demos,
+                whether the visit came from Works or a direct link; approximate{' '}
+                <strong className="text-ink">country</strong> (ISO code); optional browser language and timezone hints.
               </li>
               <li>
                 <strong className="text-ink">What we do not store:</strong> your name, email, precise GPS location,
