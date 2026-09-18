@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
+import { DemoAppVisitTracker } from '@/components/analytics/DemoAppVisitTracker';
 import { ThemeToggle } from '@/components/features/ThemeToggle';
 import { AuthLoading } from '@/components/rental/AuthLoading';
 import { RentalDemoBanner } from '@/components/rental/RentalDemoBanner';
@@ -149,6 +150,7 @@ export function RentalLayout() {
 
   return (
     <>
+      <DemoAppVisitTracker appId="rental" />
       <div className="fixed inset-x-0 top-0 z-50 border-b border-line bg-base/80 backdrop-blur-xl">
         <RentalNavbarContent />
         {!user ? <RentalDemoBanner /> : null}

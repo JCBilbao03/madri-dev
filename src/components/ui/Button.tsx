@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-normal sm:whitespace-nowrap transition-colors duration-150 ease-out disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-medium whitespace-normal sm:whitespace-nowrap transition-colors duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       variant: {

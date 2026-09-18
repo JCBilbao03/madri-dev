@@ -8,12 +8,15 @@ export const SOCIAL_LEAD_SOURCES = ['facebook', 'instagram'] as const;
 
 export const BUSINESS_LEAD_SOURCES = ['linkedin', 'whatsapp'] as const;
 
+export const EMAIL_LEAD_SOURCES = ['email-outreach'] as const;
+
 export const OTHER_LEAD_SOURCE = 'other' as const;
 
 export const LEAD_SOURCES = [
   ...APP_LEAD_SOURCES,
   ...SOCIAL_LEAD_SOURCES,
   ...BUSINESS_LEAD_SOURCES,
+  ...EMAIL_LEAD_SOURCES,
   OTHER_LEAD_SOURCE,
 ] as const;
 
@@ -43,6 +46,8 @@ export interface LeadMetadata {
   address?: string;
   itemCount?: string;
   skus?: string;
+  /** Firestore mailMessages document id when created from admin email. */
+  mailMessageId?: string;
 }
 
 export interface LeadNote {
@@ -102,6 +107,8 @@ export interface LeadUpdateInput {
   followUpAt: string;
   assigneeId: string;
   assigneeName: string;
+  /** Stored in metadata.serviceType — e.g. dental, startup. */
+  serviceType?: string;
 }
 
 export const APP_LABELS: Record<AppId, string> = {
@@ -120,6 +127,7 @@ export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   instagram: 'Instagram',
   linkedin: 'LinkedIn',
   whatsapp: 'WhatsApp',
+  'email-outreach': 'Email outreach',
   other: 'Other',
 };
 
@@ -127,6 +135,7 @@ export const LEAD_SOURCE_GROUPS = [
   { label: 'App forms', sources: APP_LEAD_SOURCES },
   { label: 'Social media', sources: SOCIAL_LEAD_SOURCES },
   { label: 'Business apps', sources: BUSINESS_LEAD_SOURCES },
+  { label: 'Email', sources: EMAIL_LEAD_SOURCES },
   { label: 'Other', sources: [OTHER_LEAD_SOURCE] as const },
 ] as const;
 
@@ -159,6 +168,7 @@ export function asLeadMetadata(value: unknown): LeadMetadata {
     'address',
     'itemCount',
     'skus',
+    'mailMessageId',
   ];
 
   for (const key of keys) {

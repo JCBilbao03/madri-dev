@@ -1,8 +1,11 @@
 import { ArrowRight, Check } from 'lucide-react';
+import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
 import { WorkPreview } from '@/components/features/WorkPreview';
 import type { Work } from '@/data/works';
+import { recordDemoAppVisit } from '@/lib/appVisitAnalytics';
+import type { DemoAppId } from '@/types/appTraffic';
 
 interface WorkCardProps {
   work: Work;
@@ -13,11 +16,16 @@ export function WorkCard({ work, index }: WorkCardProps) {
   const { title, category, description, href, ctaLabel, preview, appSlug, stack, highlights } = work;
   const indexLabel = String(index + 1).padStart(2, '0');
 
+  const handleOpenDemo = useCallback(() => {
+    void recordDemoAppVisit(appSlug as DemoAppId, 'works');
+  }, [appSlug]);
+
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface transition-all duration-300 hover:border-accent/35 hover:bg-surface-raised hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
       <Link
         to={href}
         aria-label={`${ctaLabel} — ${title}`}
+        onClick={handleOpenDemo}
         className="absolute inset-0 z-10 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base"
       />
 

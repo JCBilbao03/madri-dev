@@ -16,6 +16,7 @@ import {
 } from '@/components/operations/OpsStatusBadge';
 import { SimulatedActionButton } from '@/components/operations/SimulatedActionButton';
 import { Button } from '@/components/ui/Button';
+import { confirmDelete, showErrorAlert, showSuccessToast } from '@/lib/sweetAlert';
 import { useInventoryStore } from '@/store/useInventoryStore';
 import { formatDimensions } from '@/types/inventory';
 
@@ -55,13 +56,24 @@ export function InventoryItemPage() {
       return;
     }
 
-    const confirmed = window.confirm(`Delete ${item.name}? This cannot be undone.`);
+    const confirmed = await confirmDelete({
+      title: 'Delete item?',
+      text: `Delete ${item.name}? This cannot be undone.`,
+    });
     if (!confirmed) {
       return;
     }
 
-    await deleteItem(item.id);
-    navigate('/inventory-app/products');
+    try {
+      await deleteItem(item.id);
+      showSuccessToast('Item deleted', `${item.name} was removed.`);
+      navigate('/inventory-app/products');
+    } catch (deleteError) {
+      showErrorAlert(
+        'Could not delete item',
+        deleteError instanceof Error ? deleteError.message : 'Something went wrong.',
+      );
+    }
   }, [deleteItem, item, navigate]);
 
   const handlePrintDetails = useCallback(() => {

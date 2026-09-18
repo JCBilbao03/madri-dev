@@ -1,89 +1,123 @@
-import { LeadAssigneeSelect } from '@/components/admin/LeadAssigneeSelect';
+import { useCallback, type MouseEvent } from 'react';
+
+import { AdminAvatar } from '@/components/admin/AdminAvatar';
+import { AdminStatusDot } from '@/components/admin/AdminStatusDot';
 import { LeadFollowUpBadge } from '@/components/admin/LeadFollowUpBadge';
-import { LeadReachOutSelect } from '@/components/admin/LeadReachOutSelect';
 import { LeadRowActions } from '@/components/admin/LeadRowActions';
-import { LeadStatusBadge } from '@/components/admin/LeadStatusBadge';
-import { LeadStatusSelect } from '@/components/admin/LeadStatusSelect';
 import { isFollowUpDue } from '@/lib/leadFollowUp';
 import { cn } from '@/lib/utils';
-import { APP_LABELS, formatLeadDate, formatLeadSource, leadAssigneeLabel } from '@/types/admin';
+import { formatLeadDate, formatLeadSource, leadAssigneeLabel } from '@/types/admin';
 
 import type { LeadItemProps } from '@/components/admin/LeadCard';
+
+function isRowControlTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return Boolean(
+    target.closest(
+      'button, a, input, select, textarea, [role="menu"], [role="menuitem"], [aria-haspopup="menu"], [data-lead-row-actions]',
+    ),
+  );
+}
+
+interface LeadTableRowProps extends LeadItemProps {
+  compact?: boolean;
+  selected?: boolean;
+  onSelect?: (leadId: string, selected: boolean) => void;
+}
 
 export function LeadTableRow({
   lead,
   admins = [],
-  onStatus,
-  onAssignee,
-  onFollowUp,
+  compact = false,
+  selected = false,
+  onSelect,
   onEdit,
   onNotes,
   onDelete,
-}: LeadItemProps) {
+}: LeadTableRowProps) {
   const canManage = Boolean(onEdit && onNotes && onDelete);
   const isDue = isFollowUpDue(lead.followUpAt, lead.status);
+  const ownerLabel = leadAssigneeLabel(lead, admins);
+
+  const handleSelectChange = () => {
+    onSelect?.(lead.leadId, !selected);
+  };
+
+  const interactive = Boolean(onEdit);
+
+  const handleRowClick = useCallback(
+    (event: MouseEvent<HTMLTableRowElement>) => {
+      if (!onEdit || isRowControlTarget(event.target)) {
+        return;
+      }
+
+      onEdit(lead);
+    },
+    [lead, onEdit],
+  );
 
   return (
-    <tr className={cn('border-t border-line', isDue && 'bg-danger/[0.03]')}>
-      <td className="whitespace-nowrap px-3 py-3 align-top text-sm text-ink-muted">{formatLeadDate(lead.createdAt)}</td>
-      <td className="max-w-[12rem] px-3 py-3 align-top">
-        <p className="font-medium text-ink">{lead.name}</p>
-        <LeadFollowUpBadge followUpAt={lead.followUpAt} status={lead.status} className="mt-0.5 block" />
-      </td>
-      <td className="max-w-[14rem] px-3 py-3 align-top">
-        {lead.email ? (
-          <a href={`mailto:${lead.email}`} className="break-all text-sm text-ink-muted hover:text-ink">
-            {lead.email}
-          </a>
-        ) : (
-          <span className="text-ink-muted">—</span>
-        )}
-      </td>
-      <td className="whitespace-nowrap px-3 py-3 align-top text-sm text-ink-muted">{APP_LABELS[lead.appId]}</td>
-      <td className="whitespace-nowrap px-3 py-3 align-top text-sm text-ink-muted">{formatLeadSource(lead)}</td>
-      <td className="min-w-[16rem] px-3 py-3 align-top text-sm text-ink">{lead.summary}</td>
-      <td className="whitespace-nowrap px-3 py-3 align-top">
-        {onFollowUp ? (
-          <LeadReachOutSelect
-            leadId={lead.leadId}
-            name={lead.name}
-            followUpAt={lead.followUpAt}
-            onFollowUp={onFollowUp}
+    <tr
+      onClick={interactive ? handleRowClick : undefined}
+      className={cn(
+        'border-t border-line transition-colors hover:bg-surface-raised/40',
+        interactive && 'cursor-pointer',
+        isDue && 'bg-danger/[0.03]',
+        selected && 'bg-accent/[0.04]',
+      )}
+    >
+      {onSelect ? (
+        <td className="w-10 px-3 py-3 align-middle" onClick={(event) => event.stopPropagation()}>
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={handleSelectChange}
+            aria-label={`Select ${lead.name}`}
+            className="size-4 rounded border-line text-accent focus:ring-accent"
           />
-        ) : (
-          <span className="text-sm text-ink-muted">{lead.followUpAt || '—'}</span>
-        )}
+        </td>
+      ) : null}
+
+      <td className="max-w-[14rem] px-3 py-3 align-middle">
+        <div className="min-w-0">
+          <p className="truncate text-ink">{lead.name}</p>
+          <LeadFollowUpBadge followUpAt={lead.followUpAt} status={lead.status} className="mt-0.5 block" />
+        </div>
       </td>
-      <td className="whitespace-nowrap px-3 py-3 align-top">
-        {onStatus ? (
-          <LeadStatusSelect
-            leadId={lead.leadId}
-            name={lead.name}
-            status={lead.status}
-            onStatus={onStatus}
-            className="h-9 min-w-[8.5rem] rounded-lg text-sm"
-          />
-        ) : (
-          <LeadStatusBadge status={lead.status} />
-        )}
+
+      {!compact ? (
+        <>
+          <td className="whitespace-nowrap px-3 py-3 align-middle">
+            <div className="flex items-center gap-2">
+              {ownerLabel !== 'Unassigned' ? (
+                <AdminAvatar name={ownerLabel} size="sm" />
+              ) : null}
+              <span className="text-sm text-ink-muted">{ownerLabel}</span>
+            </div>
+          </td>
+          <td className="whitespace-nowrap px-3 py-3 align-middle text-sm text-ink-muted">
+            {formatLeadSource(lead)}
+          </td>
+        </>
+      ) : null}
+
+      <td className="whitespace-nowrap px-3 py-3 align-middle">
+        <AdminStatusDot status={lead.status} />
       </td>
-      <td className="whitespace-nowrap px-3 py-3 align-top">
-        {onAssignee ? (
-          <LeadAssigneeSelect
-            leadId={lead.leadId}
-            name={lead.name}
-            assigneeId={lead.assigneeId}
-            assigneeName={lead.assigneeName}
-            admins={admins}
-            onAssignee={onAssignee}
-            className="h-9 min-w-[8.5rem] rounded-lg text-sm"
-          />
-        ) : (
-          <span className="text-sm text-ink-muted">{leadAssigneeLabel(lead, admins)}</span>
-        )}
+
+      <td className="whitespace-nowrap px-3 py-3 align-middle text-sm text-ink-muted">
+        {formatLeadDate(lead.createdAt)}
       </td>
+
       {canManage && onEdit && onNotes && onDelete ? (
-        <td className="whitespace-nowrap px-3 py-3 align-top">
+        <td
+          className="whitespace-nowrap px-3 py-3 align-middle"
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
           <LeadRowActions lead={lead} onEdit={onEdit} onNotes={onNotes} onDelete={onDelete} />
         </td>
       ) : null}

@@ -17,7 +17,7 @@ const ROLE_OPTIONS: { id: UserRoleFilter; label: string }[] = [
 
 export function UserFilters({ role, onRoleChange }: UserFiltersProps) {
   return (
-    <div className="mt-8 -mx-5 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="mt-4 -mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden">
       <div className="inline-flex rounded-full border border-line bg-base p-1" role="group" aria-label="Filter by role">
         {ROLE_OPTIONS.map((option) => (
           <FilterChip

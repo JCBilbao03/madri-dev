@@ -72,7 +72,7 @@ export function LeadNotesModal({ lead, onClose, onAddNote }: LeadNotesModalProps
           No notes yet.
         </p>
       ) : (
-        <ul className="max-h-64 space-y-3 overflow-y-auto">
+        <ul className="max-h-48 space-y-3 overflow-y-auto sm:max-h-64">
           {notes.map((note) => (
             <li key={note.id} className="rounded-xl border border-line bg-base px-4 py-3">
               <p className="text-sm text-ink">{note.text}</p>
@@ -84,7 +84,7 @@ export function LeadNotesModal({ lead, onClose, onAddNote }: LeadNotesModalProps
         </ul>
       )}
 
-      <form onSubmit={handleSubmit} className="mt-5">
+      <form onSubmit={handleSubmit} className="mt-5 w-full min-w-0">
         <label htmlFor="lead-note" className="mb-2 block text-sm font-medium text-ink">
           Add a note
         </label>

@@ -1,4 +1,14 @@
-import { collection, deleteDoc, doc, getDocs, setDoc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  limit,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
 
 import { sortLeadsByFollowUp } from '@/lib/leadFollowUp';
 import { db, ensureAppCheckToken } from '@/lib/firebase';
@@ -37,6 +47,7 @@ function clipMetadata(metadata: NewLeadInput['metadata']): Lead['metadata'] {
     ['address', metadata.address],
     ['itemCount', metadata.itemCount],
     ['skus', metadata.skus],
+    ['mailMessageId', metadata.mailMessageId],
   ];
 
   for (const [key, value] of entries) {
@@ -107,6 +118,24 @@ export function captureLead(input: NewLeadInput): void {
   });
 }
 
+export async function findLeadByEmail(email: string): Promise<Lead | null> {
+  const trimmed = email.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const snapshot = await getDocs(
+    query(collection(db, 'leads'), where('email', '==', trimmed), limit(1)),
+  );
+
+  const match = snapshot.docs[0];
+  if (!match) {
+    return null;
+  }
+
+  return asLead(match.id, match.data());
+}
+
 export async function fetchLeads(): Promise<Lead[]> {
   const snapshot = await getDocs(collection(db, 'leads'));
   const leads = snapshot.docs
@@ -133,7 +162,7 @@ export async function updateLeadAssignee(leadId: string, admin: LeadAdminOption 
 }
 
 export async function updateLead(leadId: string, input: LeadUpdateInput): Promise<void> {
-  await updateDoc(doc(db, 'leads', leadId), {
+  const patch: Record<string, unknown> = {
     appId: input.appId,
     source: input.source,
     sourceDetail: input.source === 'other' ? clip(input.sourceDetail, 80) : '',
@@ -143,7 +172,13 @@ export async function updateLead(leadId: string, input: LeadUpdateInput): Promis
     status: input.status,
     followUpAt: clipFollowUpAt(input.followUpAt),
     ...clipAssignee(input),
-  });
+  };
+
+  if (input.serviceType !== undefined) {
+    patch['metadata.serviceType'] = clip(input.serviceType, 80);
+  }
+
+  await updateDoc(doc(db, 'leads', leadId), patch);
 }
 
 export async function deleteLead(leadId: string): Promise<void> {

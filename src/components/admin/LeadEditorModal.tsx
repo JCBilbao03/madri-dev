@@ -30,6 +30,7 @@ interface LeadFormValues {
   name: string;
   email: string;
   summary: string;
+  serviceType: string;
   appId: AppId;
   source: LeadSource;
   sourceDetail: string;
@@ -45,6 +46,7 @@ const EMPTY: LeadFormValues = {
   name: '',
   email: '',
   summary: '',
+  serviceType: '',
   appId: 'marketing',
   source: 'contact-form',
   sourceDetail: '',
@@ -58,6 +60,7 @@ function valuesFromLead(lead: Lead): LeadFormValues {
     name: lead.name,
     email: lead.email,
     summary: lead.summary,
+    serviceType: lead.metadata.serviceType ?? '',
     appId: lead.appId,
     source: lead.source,
     sourceDetail: lead.sourceDetail,
@@ -171,6 +174,7 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
         followUpAt,
         assigneeId: assigned?.uid ?? '',
         assigneeName: assigned?.name.trim() ?? '',
+        serviceType: values.serviceType.trim(),
       };
 
       setIsSaving(true);
@@ -197,8 +201,9 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
       title={isEdit ? 'Edit lead' : 'Add lead'}
       description={isEdit ? 'Update the details for this lead.' : 'Create a lead that is not coming from an app form.'}
       onClose={onClose}
+      size="lg"
     >
-      <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      <form onSubmit={handleSubmit} noValidate className="w-full min-w-0 space-y-4">
         <div>
           <label htmlFor={`${fieldId}-name`} className="mb-2 block text-sm font-medium text-ink">
             Name
@@ -337,6 +342,20 @@ export function LeadEditorModal({ isOpen, lead, admins, onClose, onCreate, onUpd
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor={`${fieldId}-serviceType`} className="mb-2 block text-sm font-medium text-ink">
+            Industry <span className="font-normal text-ink-muted">(optional)</span>
+          </label>
+          <input
+            id={`${fieldId}-serviceType`}
+            name="serviceType"
+            value={values.serviceType}
+            onChange={handleChange}
+            placeholder="e.g. dental, startup, restaurant"
+            className={fieldClasses}
+          />
         </div>
 
         <div>

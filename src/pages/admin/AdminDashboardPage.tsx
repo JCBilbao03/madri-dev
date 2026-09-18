@@ -1,12 +1,30 @@
+import { CalendarClock, Inbox, Mail, Sparkles, UserPlus, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 
-import { LeadTable } from '@/components/admin/LeadTable';
-import { StatCard } from '@/components/rental/StatCard';
-import { Container } from '@/components/ui/Container';
+import { DashboardAppTraffic } from '@/components/admin/dashboard/DashboardAppTraffic';
+import { DashboardActionQueue } from '@/components/admin/dashboard/DashboardActionQueue';
+import { DashboardInboxPreview } from '@/components/admin/dashboard/DashboardInboxPreview';
+import { DashboardPipeline } from '@/components/admin/dashboard/DashboardPipeline';
+import { DashboardQuickActions } from '@/components/admin/dashboard/DashboardQuickActions';
+import { DashboardRecentLeads } from '@/components/admin/dashboard/DashboardRecentLeads';
+import { DashboardStatCard } from '@/components/admin/dashboard/DashboardStatCard';
+import { DashboardWorkspaceLinks } from '@/components/admin/dashboard/DashboardWorkspaceLinks';
+import { AdminPage } from '@/components/admin/AdminPage';
+import { useAdminChrome } from '@/hooks/useAdminChrome';
+import { fetchDemoAppTrafficSummaries } from '@/lib/appTraffic';
 import { fetchLeads, fetchUsers } from '@/lib/adminData';
+import {
+  computeDashboardLeadStats,
+  fetchInboxSnapshot,
+  formatOverviewDate,
+  getDueFollowUpLeads,
+  getRecentLeads,
+  greetingForHour,
+  type InboxSnapshot,
+} from '@/lib/adminDashboard';
 import { authErrorMessage } from '@/lib/auth';
 import { useAuthStore } from '@/store/useAuthStore';
+import type { DemoAppTrafficSummary } from '@/types/appTraffic';
 import type { Lead } from '@/types/admin';
 import type { UserProfile } from '@/types/rental';
 
@@ -14,8 +32,24 @@ export function AdminDashboardPage() {
   const name = useAuthStore((state) => state.user?.name);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [inbox, setInbox] = useState<InboxSnapshot | null>(null);
+  const [isLoadingLeads, setIsLoadingLeads] = useState(true);
+  const [isLoadingInbox, setIsLoadingInbox] = useState(true);
+  const [traffic, setTraffic] = useState<DemoAppTrafficSummary[]>([]);
+  const [isLoadingTraffic, setIsLoadingTraffic] = useState(true);
   const [error, setError] = useState('');
+
+  const leadStats = useMemo(() => computeDashboardLeadStats(leads), [leads]);
+  const dueLeads = useMemo(() => getDueFollowUpLeads(leads), [leads]);
+  const recentLeads = useMemo(() => getRecentLeads(leads), [leads]);
+
+  useAdminChrome(
+    () => ({
+      breadcrumbs: [{ label: 'Overview' }],
+      notificationCount: leadStats.dueFollowUps,
+    }),
+    [leadStats.dueFollowUps],
+  );
 
   useEffect(() => {
     let active = true;
@@ -28,7 +62,7 @@ export function AdminDashboardPage() {
 
         setUsers(nextUsers);
         setLeads(nextLeads);
-        setIsLoading(false);
+        setIsLoadingLeads(false);
       })
       .catch((loadError: unknown) => {
         if (!active) {
@@ -36,7 +70,7 @@ export function AdminDashboardPage() {
         }
 
         setError(authErrorMessage(loadError));
-        setIsLoading(false);
+        setIsLoadingLeads(false);
       });
 
     return () => {
@@ -44,90 +78,147 @@ export function AdminDashboardPage() {
     };
   }, []);
 
-  const userStats = useMemo(
-    () => ({
-      total: users.length,
-      tenant: users.filter((user) => user.role === 'tenant').length,
-      landlord: users.filter((user) => user.role === 'landlord').length,
-      admin: users.filter((user) => user.role === 'admin').length,
-    }),
-    [users],
-  );
+  useEffect(() => {
+    let active = true;
 
-  const leadStats = useMemo(
-    () => ({
-      total: leads.length,
-      marketing: leads.filter((lead) => lead.appId === 'marketing').length,
-      rental: leads.filter((lead) => lead.appId === 'rental').length,
-      cleaning: leads.filter((lead) => lead.appId === 'cleaning').length,
-      inventory: leads.filter((lead) => lead.appId === 'inventory').length,
-    }),
-    [leads],
-  );
+    void fetchInboxSnapshot()
+      .then((snapshot) => {
+        if (active) {
+          setInbox(snapshot);
+          setIsLoadingInbox(false);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setInbox({ recent: [], unreadCount: 0, totalCount: null });
+          setIsLoadingInbox(false);
+        }
+      });
 
-  const recentLeads = useMemo(() => leads.slice(0, 5), [leads]);
-  const admins = useMemo(() => users.filter((user) => user.role === 'admin'), [users]);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    void fetchDemoAppTrafficSummaries()
+      .then((summaries) => {
+        if (active) {
+          setTraffic(summaries);
+          setIsLoadingTraffic(false);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setIsLoadingTraffic(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const greeting = greetingForHour();
+  const todayLabel = formatOverviewDate();
+  const isLoading = isLoadingLeads;
 
   return (
-    <main id="main" className="min-h-svh bg-base pt-36 pb-24 lg:pt-28 lg:pb-16">
-      <Container className="max-w-[88rem]">
-        <p className="text-sm font-medium text-accent-soft">Admin</p>
-        <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-          {name ? `Welcome, ${name}` : 'Overview'}
-        </h1>
-        <p className="mt-3 max-w-xl text-ink-muted">
-          Monitor users and leads across the MadriBuild site, rental marketplace, cleaning app, and inventory catalog.
-        </p>
+    <AdminPage>
+      <div className="mx-auto w-full max-w-[88rem] space-y-8">
+        <header className="space-y-4">
+          <div>
+            <p className="text-sm text-ink-muted">{todayLabel}</p>
+            <h1 className="mt-1 font-display text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+              {name ? `${greeting}, ${name}` : greeting}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">
+              Your outreach command center — follow-ups, inbox, and lead pipeline in one place.
+            </p>
+          </div>
+
+          {!isLoading ? <DashboardQuickActions dueCount={leadStats.dueFollowUps} /> : null}
+        </header>
 
         {isLoading ? (
-          <p className="mt-10 text-sm text-ink-muted">Loading overview…</p>
+          <p className="text-sm text-ink-muted">Loading overview…</p>
         ) : (
           <>
-            <div className="mt-8 flex items-center justify-between gap-3">
-              <h2 className="font-display text-lg font-semibold text-ink sm:text-xl">Users</h2>
-              <Link to="/admin/users" className="text-sm font-medium text-accent-soft hover:text-ink">
-                View users
-              </Link>
-            </div>
-            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard label="Total" value={userStats.total} />
-              <StatCard label="Tenants" value={userStats.tenant} />
-              <StatCard label="Landlords" value={userStats.landlord} />
-              <StatCard label="Admins" value={userStats.admin} />
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6 lg:gap-4">
+              <DashboardStatCard
+                label="Due follow-ups"
+                value={leadStats.dueFollowUps}
+                hint="Reach out today"
+                to="/admin/leads?followUp=due"
+                tone={leadStats.dueFollowUps > 0 ? 'danger' : 'default'}
+                icon={CalendarClock}
+              />
+              <DashboardStatCard
+                label="New leads"
+                value={leadStats.newCount}
+                hint="Not yet contacted"
+                to="/admin/leads"
+                tone={leadStats.newCount > 0 ? 'accent' : 'default'}
+                icon={Sparkles}
+              />
+              <DashboardStatCard
+                label="Unassigned"
+                value={leadStats.unassigned}
+                hint="Active leads without owner"
+                to="/admin/leads"
+                icon={UserPlus}
+              />
+              <DashboardStatCard
+                label="This week"
+                value={leadStats.thisWeek}
+                hint="Leads added in 7 days"
+                to="/admin/leads"
+                icon={Inbox}
+              />
+              <DashboardStatCard
+                label="Inbox"
+                value={inbox?.totalCount ?? inbox?.recent.length ?? 0}
+                hint={
+                  inbox && inbox.unreadCount > 0
+                    ? `${inbox.unreadCount} unread in recent`
+                    : 'Synced messages'
+                }
+                to="/admin/email"
+                tone={inbox && inbox.unreadCount > 0 ? 'accent' : 'default'}
+                icon={Mail}
+              />
+              <DashboardStatCard
+                label="Users"
+                value={users.length}
+                hint={`${users.filter((user) => user.role === 'admin').length} admins`}
+                to="/admin/users"
+                icon={Users}
+              />
             </div>
 
-            <div className="mt-12 flex items-center justify-between gap-3">
-              <h2 className="font-display text-lg font-semibold text-ink sm:text-xl">Leads</h2>
-              <Link to="/admin/leads" className="text-sm font-medium text-accent-soft hover:text-ink">
-                View leads
-              </Link>
-            </div>
-            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard label="Total" value={leadStats.total} />
-              <StatCard label="MadriBuild site" value={leadStats.marketing} />
-              <StatCard label="Rental" value={leadStats.rental} />
-              <StatCard label="Cleaning" value={leadStats.cleaning} />
-              <StatCard label="Inventory" value={leadStats.inventory} />
+            <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
+              <DashboardActionQueue leads={dueLeads} />
+              <DashboardInboxPreview snapshot={inbox} isLoading={isLoadingInbox} />
             </div>
 
-            <h2 className="mt-12 font-display text-lg font-semibold text-ink sm:text-xl">Recent leads</h2>
-            {recentLeads.length === 0 ? (
-              <p className="mt-5 rounded-2xl border border-dashed border-line bg-surface p-10 text-center text-sm text-ink-muted">
-                No leads yet.
-              </p>
+            <DashboardPipeline stats={leadStats} />
+
+            {isLoadingTraffic ? (
+              <p className="text-sm text-ink-muted">Loading demo traffic…</p>
             ) : (
-              <div className="mt-5">
-                <LeadTable
-                  leads={recentLeads}
-                  admins={admins}
-                  emptyLabel="No leads yet."
-                />
-              </div>
+              <DashboardAppTraffic summaries={traffic} />
             )}
-            {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
+
+            <DashboardRecentLeads leads={recentLeads} />
+
+            <DashboardWorkspaceLinks />
           </>
         )}
-      </Container>
-    </main>
+
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+      </div>
+    </AdminPage>
   );
 }

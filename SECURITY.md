@@ -18,12 +18,24 @@ The browser Firebase config is public by design. Restrict the Web API key in
 Without the **madribuild.com** referrers, Firestore and Auth calls fail on the custom
 domain even though Hosting serves the site correctly.
 
+## Demo app visit analytics (privacy-first)
+
+Anonymous traffic for Works / demo apps is recorded by the **`recordAppVisit`** Cloud
+Function (region `asia-southeast1`). It:
+
+- Requires **App Check** (same as other public writes).
+- Derives **approximate country** from the request IP using an offline GeoIP database, then **does not store the IP**.
+- Writes **aggregate counters** only (`appVisitDaily`, `appVisitTotals`).
+- Uses short-lived **hashed dedupe** documents in `appVisitDedupe` (enable **Firestore TTL** on field `expiresAt` in Firebase Console).
+
+Admin read access is Firestore rules (`isAdmin()`). Public privacy copy lives at `/privacy`.
+
+After deploying functions, enable **App Check enforcement for Cloud Functions** when metrics look healthy.
+
 ## Firebase App Check (required for public lead forms and demo writes)
 
-Contact and cleaning lead writes, inventory/ops demo mutations, and damage-claim reads
-require a valid App Check token in **Firestore and Storage rules** (`isAppCheckVerified()` /
-`isTrustedClient()`). The client initializes App Check when `VITE_FIREBASE_APP_CHECK_SITE_KEY`
-is set and waits for a token before Firestore I/O via `waitForFirestore()`.
+Contact and cleaning lead writes and inventory/ops demo **mutations** require a valid App Check token in **Firestore and Storage rules** (`isAppCheckVerified()` /
+`isTrustedClient()`). Demo collection **reads** (inventory, claims, ASNs, tasks) stay public.
 
 1. In [Firebase Console → App Check](https://console.firebase.google.com/project/madridev-119f7/appcheck),
    register the web app with **reCAPTCHA Enterprise** (must match the provider in

@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "deploy": "npm run build && firebase deploy --only hosting,firestore:rules,storage",
+    "deploy": "npm run build && npm --prefix functions run build && firebase deploy --only hosting,firestore:rules,firestore:indexes,functions,storage",
     "seed:demo": "node scripts/seed-demo.mjs",
     "seed:operations": "node scripts/seed-operations-demo.mjs",
     "appcheck:register-debug-token": "node scripts/register-app-check-debug-token.mjs",
@@ -27,6 +27,7 @@
     "vite": "^8.2.2"
   },
   "dependencies": {
+    "@tanstack/react-virtual": "^3.14.13",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^12.18.0",
@@ -37,6 +38,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3",
+    "sweetalert2": "^11.26.25",
     "tailwind-merge": "^3.6.0",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.15"

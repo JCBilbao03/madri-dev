@@ -68,7 +68,7 @@ export function Footer() {
           <p>© {new Date().getFullYear()} MadriBuild. All rights reserved.</p>
           <ul className="flex gap-6">
             <li>
-              <a href="#top" className="transition-colors duration-150 hover:text-ink">
+              <a href="/privacy" className="transition-colors duration-150 hover:text-ink">
                 Privacy
               </a>
             </li>

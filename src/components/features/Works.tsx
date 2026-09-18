@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import { WorkCard } from '@/components/features/WorkCard';
 import { Reveal } from '@/components/shared/Reveal';
 import { Container } from '@/components/ui/Container';
@@ -28,6 +30,13 @@ export function Works() {
             </Reveal>
           ))}
         </ul>
+
+        <p className="mt-8 text-xs leading-relaxed text-ink-muted">
+          We count anonymous demo opens (approximate country only) to understand interest.{' '}
+          <Link to="/privacy" className="text-accent-soft underline-offset-2 hover:underline">
+            Privacy Policy
+          </Link>
+        </p>
       </Container>
     </section>
   );

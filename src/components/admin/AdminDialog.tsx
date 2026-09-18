@@ -3,6 +3,9 @@ import { X } from 'lucide-react';
 import { useId, useRef, type ReactNode } from 'react';
 
 import { useDismissableLayer } from '@/hooks/useDismissableLayer';
+import { cn } from '@/lib/utils';
+
+type AdminDialogSize = 'md' | 'lg';
 
 interface AdminDialogProps {
   isOpen: boolean;
@@ -10,9 +13,24 @@ interface AdminDialogProps {
   description?: string;
   onClose: () => void;
   children: ReactNode;
+  size?: AdminDialogSize;
+  className?: string;
 }
 
-export function AdminDialog({ isOpen, title, description, onClose, children }: AdminDialogProps) {
+const sizeClasses: Record<AdminDialogSize, string> = {
+  md: 'sm:max-w-lg',
+  lg: 'sm:max-w-2xl',
+};
+
+export function AdminDialog({
+  isOpen,
+  title,
+  description,
+  onClose,
+  children,
+  size = 'md',
+  className,
+}: AdminDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
 
@@ -32,7 +50,7 @@ export function AdminDialog({ isOpen, title, description, onClose, children }: A
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="admin-dismiss-overlay absolute inset-0 bg-black/70 backdrop-blur-sm"
             aria-hidden="true"
           />
 
@@ -46,22 +64,35 @@ export function AdminDialog({ isOpen, title, description, onClose, children }: A
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.98 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="relative max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-xl border border-line bg-surface p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:rounded-xl sm:p-8"
+            className={cn(
+              'admin-ui relative flex w-full max-h-[min(92dvh,100dvh)] flex-col overflow-hidden',
+              'rounded-t-2xl border border-line bg-surface font-sans shadow-xl sm:rounded-2xl',
+              sizeClasses[size],
+              className,
+            )}
           >
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="absolute top-4 right-4 grid size-11 place-items-center rounded-lg text-ink-muted transition-colors duration-150 hover:bg-surface-raised hover:text-ink"
-            >
-              <X className="size-4" aria-hidden="true" />
-            </button>
+            <header className="relative shrink-0 border-b border-line/60 px-5 pt-5 pb-4 sm:px-6 sm:pt-6">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="absolute top-4 right-4 grid size-10 place-items-center rounded-lg text-ink-muted transition-colors duration-150 hover:bg-surface-raised hover:text-ink sm:top-5 sm:right-5"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
 
-            <h2 id={titleId} className="pr-10 font-display text-xl font-semibold tracking-tight text-ink sm:text-2xl">
-              {title}
-            </h2>
-            {description ? <p className="mt-2 text-sm text-ink-muted">{description}</p> : null}
-            <div className="mt-6">{children}</div>
+              <h2
+                id={titleId}
+                className="pr-11 font-display text-lg font-semibold tracking-tight text-ink sm:text-xl"
+              >
+                {title}
+              </h2>
+              {description ? <p className="mt-1.5 max-w-prose text-sm text-ink-muted">{description}</p> : null}
+            </header>
+
+            <div className="admin-dialog-body min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6 [scrollbar-width:thin]">
+              <div className="w-full min-w-0">{children}</div>
+            </div>
           </motion.div>
         </div>
       ) : null}

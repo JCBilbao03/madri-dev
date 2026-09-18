@@ -12,7 +12,22 @@ export function formatFirestoreError(error: unknown, context = 'Firestore'): str
   }
 
   if (/permission|insufficient/i.test(message)) {
-    return `${context} could not load. Hard-refresh the page. If you are on localhost, register an App Check debug token. On a custom domain, confirm API key HTTP referrers and reCAPTCHA allowed domains include this site.`;
+    const siteKey = import.meta.env.VITE_FIREBASE_APP_CHECK_SITE_KEY?.trim();
+
+    if (!siteKey) {
+      return `${context} could not load. This app requires App Check for writes — set VITE_FIREBASE_APP_CHECK_SITE_KEY in .env, rebuild, and redeploy.`;
+    }
+
+    if (import.meta.env.DEV) {
+      const debugToken = import.meta.env.VITE_FIREBASE_APP_CHECK_DEBUG_TOKEN?.trim();
+      if (debugToken) {
+        return `${context} could not load. Register App Check debug token ${debugToken} (npm run appcheck:register-debug-token), then hard-refresh.`;
+      }
+
+      return `${context} could not load. Copy the App Check debug token from the browser console, register it in Firebase Console → App Check → Manage debug tokens, then hard-refresh.`;
+    }
+
+    return `${context} could not load. Hard-refresh the page. If this persists on a custom domain, confirm API key HTTP referrers and reCAPTCHA allowed domains include this site.`;
   }
 
   return message;

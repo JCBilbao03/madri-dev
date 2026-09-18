@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import { useCallback, useId, type ChangeEvent } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -16,13 +17,15 @@ export type LeadAppFilter = AppId | 'all';
 export type LeadStatusFilter = LeadStatus | 'all';
 export type LeadAssigneeFilter = 'all' | 'unassigned' | string;
 export type LeadFollowUpFilter = 'all' | 'due';
+export type LeadIndustryFilter = 'all' | string;
 
 interface LeadFiltersProps {
   appId: LeadAppFilter;
   status: LeadStatusFilter;
   assignee: LeadAssigneeFilter;
   followUp: LeadFollowUpFilter;
-  query: string;
+  industry: LeadIndustryFilter;
+  industries: string[];
   admins: LeadAdminOption[];
   resultCount: number;
   totalCount: number;
@@ -32,19 +35,20 @@ interface LeadFiltersProps {
   onStatusChange: (value: LeadStatusFilter) => void;
   onAssigneeChange: (value: LeadAssigneeFilter) => void;
   onFollowUpChange: (value: LeadFollowUpFilter) => void;
-  onQueryChange: (value: string) => void;
+  onIndustryChange: (value: LeadIndustryFilter) => void;
   onClearFilters: () => void;
 }
 
-const fieldClasses =
-  'h-10 w-full rounded-lg border border-line bg-base px-3 text-sm text-ink focus:border-ink-muted focus:outline-none';
+const selectClasses =
+  'h-9 w-full min-w-0 rounded-lg border border-line bg-base px-2.5 text-sm text-ink transition focus:border-accent focus:outline-none';
 
 export function LeadFilters({
   appId,
   status,
   assignee,
   followUp,
-  query,
+  industry,
+  industries,
   admins,
   resultCount,
   totalCount,
@@ -54,17 +58,10 @@ export function LeadFilters({
   onStatusChange,
   onAssigneeChange,
   onFollowUpChange,
-  onQueryChange,
+  onIndustryChange,
   onClearFilters,
 }: LeadFiltersProps) {
   const fieldId = useId();
-
-  const handleQueryChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      onQueryChange(event.target.value);
-    },
-    [onQueryChange],
-  );
 
   const handleAppChange = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
@@ -101,25 +98,25 @@ export function LeadFilters({
     [onFollowUpChange],
   );
 
-  const hasUnknownAssignee = assignee !== 'all' && assignee !== 'unassigned' && !admins.some((admin) => admin.uid === assignee);
+  const handleIndustryChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      onIndustryChange(event.target.value);
+    },
+    [onIndustryChange],
+  );
+
+  const hasUnknownAssignee =
+    assignee !== 'all' && assignee !== 'unassigned' && !admins.some((admin) => admin.uid === assignee);
 
   return (
-    <section aria-label="Lead filters" className="mt-8 space-y-3">
-      <label className="block">
-        <span className="sr-only">Search leads</span>
-        <input
-          type="search"
-          value={query}
-          onChange={handleQueryChange}
-          placeholder="Search"
-          className={fieldClasses}
-        />
-      </label>
-
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <label className="block">
-          <span className="sr-only">Filter by app</span>
-          <select id={`${fieldId}-app`} value={appId} onChange={handleAppChange} className={fieldClasses}>
+    <section
+      aria-label="Lead filters"
+      className="mt-4 shrink-0 rounded-xl border border-line/80 bg-surface px-3 py-3 sm:px-4"
+    >
+      <div className="flex flex-wrap items-end gap-2 sm:gap-3">
+        <label className="min-w-[7rem] flex-1 space-y-1">
+          <span className="text-[10px] font-medium tracking-wide text-ink-muted uppercase">App</span>
+          <select id={`${fieldId}-app`} value={appId} onChange={handleAppChange} className={selectClasses}>
             <option value="all">All apps</option>
             {APP_IDS.map((id) => (
               <option key={id} value={id}>
@@ -128,9 +125,10 @@ export function LeadFilters({
             ))}
           </select>
         </label>
-        <label className="block">
-          <span className="sr-only">Filter by status</span>
-          <select id={`${fieldId}-status`} value={status} onChange={handleStatusChange} className={fieldClasses}>
+
+        <label className="min-w-[7rem] flex-1 space-y-1">
+          <span className="text-[10px] font-medium tracking-wide text-ink-muted uppercase">Status</span>
+          <select id={`${fieldId}-status`} value={status} onChange={handleStatusChange} className={selectClasses}>
             <option value="all">All statuses</option>
             {LEAD_STATUSES.map((id) => (
               <option key={id} value={id}>
@@ -139,9 +137,15 @@ export function LeadFilters({
             ))}
           </select>
         </label>
-        <label className="block">
-          <span className="sr-only">Filter by assignee</span>
-          <select id={`${fieldId}-assignee`} value={assignee} onChange={handleAssigneeChange} className={fieldClasses}>
+
+        <label className="min-w-[7rem] flex-1 space-y-1">
+          <span className="text-[10px] font-medium tracking-wide text-ink-muted uppercase">Assignee</span>
+          <select
+            id={`${fieldId}-assignee`}
+            value={assignee}
+            onChange={handleAssigneeChange}
+            className={selectClasses}
+          >
             <option value="all">All assignees</option>
             <option value="unassigned">Unassigned</option>
             {hasUnknownAssignee ? <option value={assignee}>Assigned</option> : null}
@@ -152,25 +156,64 @@ export function LeadFilters({
             ))}
           </select>
         </label>
-        <label className="block">
-          <span className="sr-only">Filter by follow-up</span>
-          <select id={`${fieldId}-follow-up`} value={followUp} onChange={handleFollowUpChange} className={fieldClasses}>
+
+        <label className="min-w-[7rem] flex-1 space-y-1">
+          <span className="text-[10px] font-medium tracking-wide text-ink-muted uppercase">Industry</span>
+          <select
+            id={`${fieldId}-industry`}
+            value={industry}
+            onChange={handleIndustryChange}
+            className={selectClasses}
+          >
+            <option value="all">All industries</option>
+            {industries.map((entry) => (
+              <option key={entry} value={entry}>
+                {entry}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="min-w-[7rem] flex-1 space-y-1">
+          <span className="text-[10px] font-medium tracking-wide text-ink-muted uppercase">Due</span>
+          <select
+            id={`${fieldId}-follow-up`}
+            value={followUp}
+            onChange={handleFollowUpChange}
+            className={selectClasses}
+          >
             <option value="all">All follow-ups</option>
             <option value="due">Due now</option>
           </select>
         </label>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
-        <span>
-          {resultCount} of {totalCount}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <span className="text-xs text-ink-muted">
+          <span className="font-medium text-ink">{resultCount}</span> of {totalCount} leads
         </span>
         {dueCount > 0 ? (
-          <span className={cn(followUp === 'due' && 'text-danger')}>{dueCount} due</span>
+          <button
+            type="button"
+            onClick={() => onFollowUpChange(followUp === 'due' ? 'all' : 'due')}
+            className={cn(
+              'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition',
+              followUp === 'due'
+                ? 'border-danger/40 bg-danger/10 text-danger'
+                : 'border-line bg-base text-ink-muted hover:border-danger/30 hover:text-danger',
+            )}
+          >
+            {dueCount} due now
+          </button>
         ) : null}
         {hasActiveFilters ? (
-          <button type="button" onClick={onClearFilters} className="text-ink hover:underline">
-            Clear
+          <button
+            type="button"
+            onClick={onClearFilters}
+            className="inline-flex items-center gap-1 rounded-full border border-line bg-base px-2.5 py-0.5 text-xs text-ink-muted transition hover:text-ink"
+          >
+            <X className="size-3" aria-hidden="true" />
+            Clear filters
           </button>
         ) : null}
       </div>

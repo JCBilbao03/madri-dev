@@ -69,6 +69,183 @@
 }
 
 @layer components {
+  /*
+   * Admin typography pairing:
+   * - Poppins (display): headlines, subheadings, CTAs — weight 500–700
+   * - Roboto (sans): body copy, labels, table data, inputs — weight 400
+   */
+  .admin-ui {
+    --font-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .admin-ui :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+
+  .admin-ui :is(button, input[type='button'], input[type='submit'], input[type='reset']) {
+    font-family: var(--font-display);
+    font-weight: 500;
+  }
+
+  /* Button-styled router links and anchors (shared Button component) */
+  .admin-ui a.inline-flex.rounded-lg {
+    font-family: var(--font-display);
+    font-weight: 500;
+  }
+
+  .admin-ui nav[aria-label='Admin pages'] a {
+    font-family: var(--font-display);
+    font-weight: 500;
+  }
+
+  .admin-ui :is(label, input:not([type='button']):not([type='submit']), select, textarea) {
+    font-family: var(--font-sans);
+    font-weight: 400;
+  }
+
+  .admin-ui th {
+    font-family: var(--font-sans);
+    font-weight: 500;
+  }
+
+  .admin-ui td {
+    font-weight: 400;
+  }
+
+  /* Clickable affordances — pointer on interactive controls, text cursor on inputs. */
+  .admin-ui :is(
+    button:not(:disabled),
+    a[href],
+    [role='button']:not([aria-disabled='true']),
+    [role='menuitem'],
+    select:not(:disabled),
+    input[type='checkbox']:not(:disabled),
+    input[type='radio']:not(:disabled),
+    label:has(input[type='checkbox']:not(:disabled)),
+    label:has(input[type='radio']:not(:disabled))
+  ) {
+    cursor: pointer;
+  }
+
+  .admin-ui :is(button:disabled, input:disabled, select:disabled, textarea:disabled) {
+    cursor: not-allowed;
+  }
+
+  .admin-ui :is(
+    input:not([type='button']):not([type='submit']):not([type='reset']):not([type='checkbox']):not([type='radio']),
+    textarea
+  ) {
+    cursor: text;
+  }
+
+  .admin-ui .admin-dismiss-overlay {
+    cursor: pointer;
+  }
+
+  .admin-ui table.admin-data-table thead tr,
+  .admin-ui table.admin-data-table thead th {
+    cursor: default;
+  }
+
+  .admin-ui .admin-table-scroll {
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+
+  .admin-ui .admin-dialog-body :is(form, input, select, textarea, table, pre) {
+    max-width: 100%;
+  }
+
+  /* SweetAlert2 — MadriBuild theme */
+  .swal-madri-popup {
+    border: 1px solid var(--color-line) !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem 1.25rem !important;
+    box-shadow: 0 24px 48px rgb(0 0 0 / 0.28) !important;
+    font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .swal-madri-title {
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    color: var(--color-ink) !important;
+  }
+
+  .swal-madri-text {
+    color: var(--color-ink-muted) !important;
+    font-size: 0.875rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .swal-madri-actions {
+    gap: 0.5rem !important;
+    width: 100%;
+    margin-top: 0.25rem !important;
+  }
+
+  .swal-madri-btn {
+    border-radius: 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    margin: 0 !important;
+    min-height: 2.25rem;
+    cursor: pointer;
+  }
+
+  .swal-madri-btn-danger {
+    background: var(--color-danger) !important;
+    color: #fff !important;
+  }
+
+  .swal-madri-btn-primary {
+    background: var(--color-accent) !important;
+    color: #1a1c22 !important;
+  }
+
+  .swal-madri-btn-cancel {
+    background: var(--color-surface-raised) !important;
+    color: var(--color-ink) !important;
+    border: 1px solid var(--color-line) !important;
+  }
+
+  .swal-madri-toast {
+    border: 1px solid var(--color-line) !important;
+    border-radius: 0.75rem !important;
+    padding: 0.75rem 1rem !important;
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.22) !important;
+    font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+    min-width: 16rem;
+    max-width: 22rem;
+  }
+
+  .swal-madri-toast-title {
+    font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: var(--color-ink) !important;
+    margin: 0 !important;
+  }
+
+  .swal-madri-toast-text {
+    font-size: 0.8125rem !important;
+    color: var(--color-ink-muted) !important;
+    margin-top: 0.125rem !important;
+  }
+
+  .swal-madri-toast-progress {
+    background: var(--color-accent) !important;
+  }
+
   /* Beats the base `img { height: auto }` rule so the header mark never renders oversized. */
   .logo-mark {
     display: block;

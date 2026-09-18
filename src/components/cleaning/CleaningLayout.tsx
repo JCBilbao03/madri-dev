@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 
+import { DemoAppVisitTracker } from '@/components/analytics/DemoAppVisitTracker';
 import { BookingModal } from '@/components/cleaning/BookingModal';
 import { ThemeToggle } from '@/components/features/ThemeToggle';
 import { Container } from '@/components/ui/Container';
@@ -51,6 +52,7 @@ export function CleaningLayout() {
 
   return (
     <>
+      <DemoAppVisitTracker appId="cleaning" />
       <CleaningNavbar />
       <Outlet />
       <BookingModal />

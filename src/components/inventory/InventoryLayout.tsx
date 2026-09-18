@@ -2,6 +2,7 @@ import { Boxes, Menu, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
+import { DemoAppVisitTracker } from '@/components/analytics/DemoAppVisitTracker';
 import { InventorySidebar } from '@/components/inventory/InventorySidebar';
 import { ThemeToggle } from '@/components/features/ThemeToggle';
 import { Logo } from '@/components/ui/Logo';
@@ -131,6 +132,7 @@ export function InventoryLayout() {
 
   return (
     <div className="inventory-shell flex min-h-svh flex-col">
+      <DemoAppVisitTracker appId="inventory" />
       <InventoryNavbar mobileOpen={mobileOpen} onToggleMobile={handleToggleMobile} />
       <div className="flex min-h-0 flex-1 pt-16 sm:pt-18 lg:items-stretch">
         <InventorySidebar

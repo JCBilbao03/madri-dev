@@ -1,4 +1,13 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "mailMessages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "mailbox", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

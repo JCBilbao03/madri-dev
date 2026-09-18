@@ -12,6 +12,8 @@ import { useThemeSync } from '@/hooks/useThemeSync';
 import { AccountPage } from '@/pages/AccountPage';
 import { AdminAppsPage } from '@/pages/admin/AdminAppsPage';
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
+import { AdminEmailPage } from '@/pages/admin/AdminEmailPage';
+import { AdminEmailTemplatesPage } from '@/pages/admin/AdminEmailTemplatesPage';
 import { AdminLeadsPage } from '@/pages/admin/AdminLeadsPage';
 import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
 import { AsnBuilderPage } from '@/pages/AsnBuilderPage';
@@ -26,6 +28,7 @@ import { InventoryFormPage } from '@/pages/InventoryFormPage';
 import { InventoryItemPage } from '@/pages/InventoryItemPage';
 import { InventoryLabelsPage } from '@/pages/InventoryLabelsPage';
 import { LandingPage } from '@/pages/LandingPage';
+import { PrivacyPage } from '@/pages/PrivacyPage';
 import { LandlordDashboard } from '@/pages/LandlordDashboard';
 import { ListingQuestionsPage } from '@/pages/ListingQuestionsPage';
 import { LoginPage } from '@/pages/LoginPage';
@@ -46,6 +49,7 @@ export function App() {
       <AuthListener />
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route
           path="/login"
           element={
@@ -71,6 +75,8 @@ export function App() {
         >
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/leads" element={<AdminLeadsPage />} />
+          <Route path="/admin/email" element={<AdminEmailPage />} />
+          <Route path="/admin/email/templates" element={<AdminEmailTemplatesPage />} />
           <Route path="/admin/apps" element={<AdminAppsPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
         </Route>

@@ -1,0 +1,25 @@
+{
+  "name": "madribuild-functions",
+  "private": true,
+  "main": "lib/index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^6.6.0",
+    "geoip-lite": "^1.4.10",
+    "imapflow": "^1.0.199",
+    "mailparser": "^3.9.0",
+    "nodemailer": "^7.0.6"
+  },
+  "devDependencies": {
+    "@types/geoip-lite": "^1.4.4",
+    "@types/nodemailer": "^7.0.1",
+    "typescript": "~5.9.2"
+  }
+}

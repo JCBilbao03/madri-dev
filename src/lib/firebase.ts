@@ -8,6 +8,7 @@ import {
 import { getAnalytics, isSupported } from 'firebase/analytics';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -73,6 +74,9 @@ export const db = getFirestore(firebaseApp);
 
 /** Cloud Storage — property photos in a later phase. */
 export const storage = getStorage(firebaseApp);
+
+/** Cloud Functions — admin email sync/send (asia-southeast1). */
+export const functions = getFunctions(firebaseApp, 'asia-southeast1');
 
 void isSupported().then((supported) => {
   if (supported) {
